@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  auth-service-laravel:
+    build:
+      context: ./micro-service/laravel-service
+      dockerfile: ./docker/workspace/development/Dockerfile
+      target: development
+    container_name: auth-service-laravel
+    image: auth-service-laravel:latest
+    # ports:
+    #   - "9000:9000"
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE:-micro-service}
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-1215161}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./micro-service/laravel-service:/var/www
+    networks:
+      - micro-service-network
+
+  mysql:
+    image: mysql:8
+    container_name: laravel_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
+      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - micro-service-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  nginx-laravel:
+    build: ./micro-service/laravel-service/docker/nginx/development
+    container_name: nginx-laravel
+    image: nginx-laravel:latest
+    ports:
+      - "8081:80"
+    depends_on:
+      - auth-service-laravel
+    networks:
+      - micro-service-network
+    healthcheck:
+      test: curl -f http://localhost || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway-nginx:
+    build: ./nginx-gateway
+    container_name: gateway-nginx
+    image: gateway-nginx:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service-laravel
+    networks:
+      - micro-service-network
+
+
+networks:
+  micro-service-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
