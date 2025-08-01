@@ -1,0 +1,33 @@
+# Node modules
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+logs
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Env
+.env
+.env.*
+
+# Test / coverage
+coverage
+test-output
+
+# Optional
+npm-debug.log
+yarn-debug.log
+yarn-error.log
