@@ -27,6 +27,27 @@ services:
     networks:
       - micro-service-network
 
+  express-service:
+    build:
+      context: ./micro-service/express-service
+      dockerfile: Dockerfile
+    container_name: express-service
+    image: express-service:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service-laravel
+    networks:
+      - micro-service-network
+    volumes:
+      - ./micro-service/express-service:/src/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   mysql:
     image: mysql:8
     container_name: laravel_mysql
@@ -63,7 +84,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+      
   gateway-nginx:
     build: ./nginx-gateway
     container_name: gateway-nginx
@@ -72,8 +93,11 @@ services:
       - "8080:80"
     depends_on:
       - auth-service-laravel
+      - express-service
+      - nginx-laravel
     networks:
       - micro-service-network
+    restart: always
 
 
 networks:
