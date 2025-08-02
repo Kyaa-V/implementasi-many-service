@@ -1,0 +1,30 @@
+# Node modules dan dependencies yang akan diinstall ulang di Docker
+node_modules
+npm-debug.log
+yarn-error.log
+
+# File konfigurasi development
+.dockerignore
+.env
+.env.*          # misalnya .env.local, .env.dev, dsb
+*.local
+*.log
+
+# File dan folder system
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+*.swp
+*.swo
+
+# Test dan dokumentasi
+coverage
+tests
+__tests__
+docs
+
+# Build result lokal (jika ada)
+.nuxt
+dist

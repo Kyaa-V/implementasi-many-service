@@ -1,6 +1,27 @@
 version: "3.8"
 
 services:
+
+  nuxt-service:
+    build:
+      context: ./micro-frontend/nuxt-app-service
+      dockerfile: Dockerfile
+    container_name: nuxt-service
+    image: nuxt-service:latest
+    ports:
+    - "3030:3000"
+    networks:
+      - micro-frontend-network
+    volumes:
+      - ./micro-frontend/nuxt-app-service:/src/app
+      - /src/app/node_modules
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    
   auth-service-laravel:
     build:
       context: ./micro-service/laravel-service
@@ -9,7 +30,7 @@ services:
     container_name: auth-service-laravel
     image: auth-service-laravel:latest
     # ports:
-    #   - "9000:9000"
+    # - "127.0.0.1:8080:3000" 
     environment:
       - APP_ENV=${APP_ENV:-local}
       - APP_DEBUG=${APP_DEBUG:-true}
@@ -34,7 +55,7 @@ services:
     container_name: express-service
     image: express-service:latest
     ports:
-      - "3000:3000"
+    - "3000:3000" 
     depends_on:
       - auth-service-laravel
     networks:
@@ -74,7 +95,7 @@ services:
     container_name: nginx-laravel
     image: nginx-laravel:latest
     ports:
-      - "8081:80"
+    - "8000:80" 
     depends_on:
       - auth-service-laravel
     networks:
@@ -85,10 +106,10 @@ services:
       timeout: 5s
       retries: 5
       
-  gateway-nginx:
-    build: ./nginx-gateway
-    container_name: gateway-nginx
-    image: gateway-nginx:latest
+  gateway-nginx-backend:
+    build: ./nginx-gateway-backend
+    container_name: gateway-nginx-backend
+    image: gateway-nginx-backend:latest
     ports:
       - "8080:80"
     depends_on:
@@ -99,9 +120,23 @@ services:
       - micro-service-network
     restart: always
 
+  gateway-nginx-frontend:
+    build: ./nginx-gateway-frontend
+    container_name: gateway-nginx-frontend
+    image: gateway-nginx-frontend:latest
+    ports:
+      - "8083:80"
+    depends_on:
+      - nuxt-service
+    networks:
+      - micro-frontend-network
+    restart: always
+
 
 networks:
   micro-service-network:
+    driver: bridge
+  micro-frontend-network:
     driver: bridge
 
 volumes:

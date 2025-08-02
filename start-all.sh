@@ -7,6 +7,8 @@ docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.en
 echo "✅ Semua service telah dihentikan."
 
 echo "⬆️  Build ulang dan up semua service..."
+# docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env build --no-cache
+
 docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env up -d --build
 
 echo "🔍 Lihat status container..."
@@ -17,6 +19,7 @@ echo "📜 Melihat log dari semua service..."
 docker logs -f express-service &
 docker logs -f auth-service-laravel &
 docker logs -f gateway-nginx &
+docker logs -f nuxt-service &
 
 # Tunggu agar tidak langsung exit
 wait
