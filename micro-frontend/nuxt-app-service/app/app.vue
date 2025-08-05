@@ -1,5 +1,5 @@
 <template>
-  <div> testing hallo world
+  <div> hello world testing sip ok mantap
     <!-- <NuxtRouteAnnouncer />
     <NuxtWelcome /> -->
   </div>
