@@ -6,9 +6,9 @@ app.get('/', (req,res)=> {
     res.send("hello world testing ok sip");
 })
 app.get('/hello', (req,res)=> {
-    res.send("hello world");
+    res.send("testing");
 })
 
 app.listen(port, () =>{
     console.log(`server is running on http://localhost:${port}`)
-})
+})  

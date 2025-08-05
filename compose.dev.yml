@@ -9,12 +9,43 @@ services:
     container_name: nuxt-service
     image: nuxt-service:latest
     ports:
-    - "3030:3000"
+    - "3032:3000"
     networks:
       - micro-frontend-network
     volumes:
       - ./micro-frontend/nuxt-app-service:/src/app
       - /src/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - HMR_HOST=host.docker.internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  next-service:
+    build:
+      context: ./micro-frontend/next-service
+      dockerfile: Dockerfile
+    container_name: next-service
+    image: next-service:latest
+    ports:
+    - "3031:3000"
+    networks:
+      - micro-frontend-network
+    volumes:
+      - ./micro-frontend/next-service:/src/app
+      - /src/app/node_modules
+    environment:
+        - CHOKIDAR_USEPOLLING=true  # Untuk file watching di Docker
+        - WATCHPACK_POLLING=true    # Alternative untuk file watching
+        - NODE_ENV=development
+        - HOST=0.0.0.0
+        - PORT=3031
+    stdin_open: true
+    tty: true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

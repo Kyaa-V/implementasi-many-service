@@ -1,0 +1,26 @@
+# Node modules di host tidak perlu dikopi (diinstall ulang di dalam container)
+node_modules
+
+# Log & build files
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+.next
+out
+dist
+
+# OS & editor files
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# Git-related
+.git
+.gitignore
+
+# Environment & secrets (kecuali kalau kamu memang ingin copy ke container)
+.env
+.env.local
+.env.*.local
