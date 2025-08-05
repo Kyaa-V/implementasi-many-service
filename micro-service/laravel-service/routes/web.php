@@ -10,5 +10,5 @@ Route::get('/hello', function () {
     return 'cek route get hello';
 });
 Route::get('/user/123', function () {
-    return 'cek route get user 123';
+    return 'hallo testing cek';
 });

@@ -8,6 +8,26 @@ export default defineNuxtConfig({
         usePolling: true,
         interval: 1000,
       },
+      hmr: {
+        protocol: 'ws',
+        host: process.env.HMR_HOST || 'localhost',
+        port: 3032
+      }
     },
-  },
+  }
 })
+  //   vue: {
+  //     customElement: true
+  //   },
+  //   vueJsx: {
+  //     mergeProps: true
+  //   }
+  // },
+  // webpack: {
+  //   loaders: {
+  //     vue: {
+  //       hotReload: true,
+  //     }
+  //   }
+  // },
+//})
