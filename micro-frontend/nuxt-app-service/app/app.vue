@@ -1,5 +1,5 @@
 <template>
-  <div> hello world testing sip ok mantap
+  <div> hello world testing eclaj
     <!-- <NuxtRouteAnnouncer />
     <NuxtWelcome /> -->
   </div>

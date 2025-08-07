@@ -18,7 +18,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - HMR_HOST=host.docker.internal
-    restart: unless-stopped
+    restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
@@ -43,10 +43,10 @@ services:
         - WATCHPACK_POLLING=true    # Alternative untuk file watching
         - NODE_ENV=development
         - HOST=0.0.0.0
-        - PORT=3031
+        - PORT=3000
     stdin_open: true
     tty: true
-    restart: unless-stopped
+    restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
@@ -93,7 +93,7 @@ services:
       - micro-service-network
     volumes:
       - ./micro-service/express-service:/src/app
-    restart: unless-stopped
+    restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 5s
@@ -103,7 +103,7 @@ services:
   mysql:
     image: mysql:8
     container_name: laravel_mysql
-    restart: always
+    restart: no
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
       MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
@@ -149,7 +149,7 @@ services:
       - nginx-laravel
     networks:
       - micro-service-network
-    restart: always
+    restart: no
 
   gateway-nginx-frontend:
     build: ./nginx-gateway-frontend
@@ -159,9 +159,10 @@ services:
       - "8083:80"
     depends_on:
       - nuxt-service
+      - next-service
     networks:
       - micro-frontend-network
-    restart: always
+    restart: no
 
 
 networks:
