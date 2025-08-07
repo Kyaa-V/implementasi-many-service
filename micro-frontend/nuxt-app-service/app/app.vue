@@ -1,5 +1,5 @@
 <template>
-  <div> hello world testing eclaj
+  <div> hello world testing container nuxt
     <!-- <NuxtRouteAnnouncer />
     <NuxtWelcome /> -->
   </div>
