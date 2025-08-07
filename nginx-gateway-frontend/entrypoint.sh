@@ -4,6 +4,7 @@ echo "🕒 Menunggu service NUXT FRONTEND..."
 
 dockerize \
   -wait tcp://nuxt-service:3000 \
+  -wait tcp://next-service:3000 \
   -timeout 60s
 
 echo "✅ Semua service telah siap."
