@@ -60,6 +60,7 @@ class ProductController extends Controller
      *             @OA\Property(property="name", type="string", example="Produk Baru")
      *         )
      *     ),
+     *     
      *     @OA\Response(response=201, description="Berhasil dibuat")
      * )
      */
