@@ -1,0 +1,11 @@
+[mysqld]
+server-id = 2
+log-bin = mysql-bin
+binlog-format = ROW
+gtid-mode = ON
+enforce-gtid-consistency = ON
+read-only = 1
+bind-address = 0.0.0.0
+max_connections = 1000
+relay-log = relay-bin
+relay-log-index = relay-bin.index

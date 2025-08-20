@@ -60,15 +60,16 @@ FROM php:8.2-fpm AS base-runtime
 
 # Install runtime system dependencies
 RUN apt-get update && apt-get install -y \
-    libzip4 \
-    libpng16-16 \
-    libjpeg62-turbo \
-    libfreetype6 \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libxml2 \
-    libonig5 \
+    libonig-dev \
     libsqlite3-0 \
-    libicu72 \
+    libicu-dev \
     git \
+    unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy from builder stage
@@ -104,6 +105,7 @@ WORKDIR /var/www
 RUN mkdir -p /var/run/php
 RUN chown -R www-data:www-data /var/run/php
 RUN chmod -R 755 /var/run/php
+RUN chmod -R 775 storage bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod +x /usr/local/bin/init.sh 
