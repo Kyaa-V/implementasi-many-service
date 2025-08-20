@@ -1,4 +1,4 @@
-FROM mysql:8.0
+FROM mysql:9.3
 
 # Pastikan direktori konfigurasi ada
 RUN mkdir -p /etc/mysql/conf.d

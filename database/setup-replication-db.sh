@@ -15,7 +15,7 @@ sleep 15
 # Test connectivity dengan mysqladmin ping
 for service in mysql-master mysql-replica1 mysql-replica2; do
     echo "Testing connectivity to $service..."
-    until docker exec $service mysqladmin ping --user=root --password=$ROOT_PASS --silent 2>/dev/null; do
+    until docker exec $service mysqladmin ping --user=root --password=$ROOT_PASS --silent; do
         echo "Waiting for $service to be ready..."
         sleep 3
     done
@@ -24,20 +24,21 @@ done
 
 echo "🔧 Creating replication user on master..."
 docker exec mysql-master mysql -uroot -p$ROOT_PASS -e "
-  CREATE USER IF NOT EXISTS '$REPL_USER'@'%' IDENTIFIED WITH caching_sha2_password BY '$REPL_PASS';
+  DROP USER IF EXISTS '$REPL_USER'@'%';
+  CREATE USER '$REPL_USER'@'%' IDENTIFIED WITH caching_sha2_password BY '$REPL_PASS';
   GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '$REPL_USER'@'%';
   FLUSH PRIVILEGES;
 "
 
 echo "📊 Getting master status..."
-MASTER_STATUS=$(docker exec mysql-master mysql -uroot -p$ROOT_PASS -e "SHOW MASTER STATUS;" --skip-column-names 2>/dev/null | head -n 1)
-
-if [ -z "$MASTER_STATUS" ]; then
+MASTER_STATUS=$(docker exec mysql-master mysql -uroot -p$ROOT_PASS -e "SHOW BINARY LOG STATUS;" --skip-column-names)
+if [ $? -ne 0 ] || [ -z "$MASTER_STATUS" ]; then
     echo "❌ Error: Could not get master status"
-    exit 1
+    docker exec mysql-master mysql -uroot -p$ROOT_PASS -e "SHOW BINARY LOG STATUS;" 2>&1
+    echo "Continuing script for debugging..."
+else
+    echo "Master status: $MASTER_STATUS"
 fi
-
-echo "Master status: $MASTER_STATUS"
 
 echo "⚙️ Configuring replicas with GTID..."
 for replica in mysql-replica1 mysql-replica2; do
@@ -90,7 +91,7 @@ sleep 3
 
 for replica in mysql-replica1 mysql-replica2; do
     echo "Checking test data on $replica..."
-    RESULT=$(docker exec $replica mysql -uroot -p$ROOT_PASS -e "SELECT COUNT(*) as count FROM test_repl.test_table WHERE name='test_replication';" --skip-column-names 2>/dev/null || echo "0")
+    RESULT=$(docker exec $replica mysql -uroot -p$ROOT_PASS -e "SELECT COUNT(*) as count FROM test_repl.test_table WHERE name='test_replication';" --skip-column-names || echo "0")
     if [ "$RESULT" = "1" ]; then
         echo "✅ Replication working on $replica"
     else
