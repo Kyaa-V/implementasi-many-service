@@ -74,7 +74,7 @@ services:
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-1215161}
     depends_on:
-      mysql:
+      mysql-master:
         condition: service_healthy
     volumes:
       - ./micro-service/laravel-service:/var/www
@@ -95,33 +95,15 @@ services:
       - micro-service-network
     volumes:
       - ./micro-service/express-service:/src/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
     restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 5s
       timeout: 3s
       retries: 5
-
-  mysql:
-    image: mysql:8
-    container_name: laravel_mysql
-    restart: no
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
-      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - micro-service-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
   nginx-laravel:
     build: ./micro-service/laravel-service/docker/nginx/development
@@ -166,6 +148,97 @@ services:
       - micro-frontend-network
     restart: no
 
+  mysql-master:
+    build:
+      context: ./database/mysql-master
+      dockerfile: Dockerfile
+    image: micro-service-mysql-master:9.4
+    container_name: mysql-master
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
+      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-master-data:/var/lib/mysql
+    networks:
+      - micro-service-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mysql-replica1:
+    build:
+      context: ./database/mysql-replica
+      dockerfile: Dockerfile
+    image: micro-service-mysql-replica1:9.4
+    container_name: mysql-replica1
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
+      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql-replica1-data:/var/lib/mysql
+    depends_on:
+      - mysql-master
+    networks:
+      - micro-service-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      
+  mysql-replica2:
+    build:
+      context: ./database/mysql-replica2
+      dockerfile: Dockerfile
+    image: micro-service-mysql-replica2:9.4
+    container_name: mysql-replica2
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
+      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql-replica2-data:/var/lib/mysql
+    depends_on:
+      - mysql-master
+    networks:
+      - micro-service-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+  
+  replication-setup:
+    image: mysql:8.0-debian
+    container_name: replication-setup
+    volumes:
+      - ./database/setup-replication-db.sh:/scripts/setup-replication.sh
+    networks:
+      - micro-service-network
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-replica1:
+        condition: service_healthy
+      mysql-replica2:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/scripts/setup-replication.sh"]
+
 
 networks:
   micro-service-network:
@@ -174,4 +247,6 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data:
+  mysql-master-data:
+  mysql-replica1-data:
+  mysql-replica2-data:

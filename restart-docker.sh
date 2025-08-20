@@ -6,20 +6,11 @@ echo "🚀 Memulai semua service..."
 # Waktu mulai script
 script_start_time=$(date +%s)
 
-echo "🛑 Menghentikan dan menghapus service yang sedang berjalan..."
-docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env down -v
-echo "✅ Semua service telah dihentikan."
+echo "Restart Docker Container"
+docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env restart
+echo "✅ Semua service telah direstart."
 
-echo "⬆️  Build ulang dan up semua service..."
-if ! docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env up -d --build; then
-    echo "❌ Build atau up service gagal. Periksa error di atas."
-    exit 1
-fi
 
-echo "🔍 Lihat status container..."
-docker ps -a
-
-# Fungsi menunggu dengan streaming log
 wait_for_service_log() {
     local name="$1"
     local success_msg="$2"
@@ -61,7 +52,6 @@ chmod +x ./database/setup-replication-db.sh
 ./database/setup-replication-db.sh
 
 echo "✅ Replication setup complete."
-
 
 # Tunggu dan ikuti log tiap service
 wait_for_service_log "auth-service-laravel" "Laravel ready to run"

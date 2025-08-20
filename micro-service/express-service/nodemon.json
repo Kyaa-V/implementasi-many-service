@@ -1,5 +1,6 @@
 {
-  "watch": ["/src/app"],
+  "watch": ["src"],
   "ext": "js,json",
+  "exec": "node index.js",
   "legacyWatch": true
 }
