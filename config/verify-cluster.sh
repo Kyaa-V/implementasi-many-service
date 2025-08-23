@@ -208,19 +208,83 @@ for replica in mysql-replica1 mysql-replica2; do
 done
 
 echo ""
+
 echo "7. 🛡️ FAILOVER SIMULATION TEST"
 echo "Testing cluster resilience (read-only test)..."
+
+# MySQL connection function with better error handling for step 7
+mysql_exec_robust() {
+    local server=$1
+    local query=$2
+    local max_retries=3
+    local retry_delay=2
+    
+    for i in $(seq 1 $max_retries); do
+        echo "DEBUG: Attempt $i/$max_retries - Executing on $server: $query" >&2
+        
+        # Check if container is running first
+        if ! docker ps --format "table {{.Names}}" | grep -q "^${server}$"; then
+            echo "ERROR: Container $server is not running" >&2
+            return 1
+        fi
+        
+        # Check if MySQL process is ready
+        if ! docker exec $server mysqladmin -uroot -p1215161 ping >/dev/null 2>&1; then
+            echo "WARNING: MySQL on $server not ready, retrying in ${retry_delay}s..." >&2
+            sleep $retry_delay
+            continue
+        fi
+        
+        # Execute query with timeout and better error handling
+        result=$(timeout 10 docker exec $server mysql -uroot -p1215161 --connect-timeout=5 -e "$query" 2>&1)
+        exit_code=$?
+        
+        if [ $exit_code -eq 0 ]; then
+            echo "Query result: $result" >&2
+            local exit_code=$?
+            echo "DEBUG: Success on $server (exit code: $exit_code)" >&2
+            return 0
+        else
+            local exit_code=$?
+            echo "DEBUG: Failed on $server (exit code: $exit_code), attempt $i/$max_retries" >&2
+            if [ $i -lt $max_retries ]; then
+                sleep $retry_delay
+            fi
+        fi
+    done
+    
+    echo "ERROR: All $max_retries attempts failed for $server" >&2
+    return 1
+}
 
 # Test read operations on all servers
 for server in mysql-master mysql-replica1 mysql-replica2; do
     echo "--- Testing read capability on $server ---"
-    read_test=$(mysql_exec $server "SELECT 'Connection successful' as status, NOW() as current_time;")
-    if [ $? -eq 0 ]; then
+    
+    # Check container status first
+    container_status=$(docker inspect $server --format='{{.State.Status}}' 2>/dev/null || echo "not-found")
+    if [ "$container_status" != "running" ]; then
+        echo "❌ $server: Container not running (status: $container_status)"
+        continue
+    fi
+    
+    # Wait a moment for MySQL to be fully ready
+    echo "⏱️  Waiting for $server to be ready..."
+    sleep 2
+    
+    # Test connection with robust function (MySQL 9.x compatible syntax)
+    if mysql_exec_robust $server "SELECT 'Connection successful' as status, NOW() as current_time_value;"; then
         echo "✅ $server: Read operations working"
-        echo "$read_test"
     else
         echo "❌ $server: Read operations failed"
+        
+        # Additional diagnostics
+        echo "🔍 Diagnostics for $server:"
+        docker exec $server ps aux | grep mysql | head -3
+        echo "Last 5 lines of MySQL log:"
+        docker logs $server --tail 5
     fi
+    echo ""
 done
 
 echo ""
