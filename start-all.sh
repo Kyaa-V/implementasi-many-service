@@ -76,3 +76,25 @@ echo "🌐 Gateway Frontend: http://localhost:8083"
 echo "🔗 NUXT:   http://localhost:8083/dashboard"
 echo "🔗 NEXT:   http://localhost:8083/"
 echo "✅ Semua service telah siap dan berjalan."
+
+
+echo ""
+echo ""
+echo ""
+echo "======================= 🔄 Memulai Prosses debugging-replication db.... ================================"
+echo ""
+echo ""
+
+./config/debug-replication.sh
+
+echo "✅ Proses debugging-replication db selesai."
+
+echo ""
+echo ""
+echo ""
+echo "======================= 🔄 Memulai Prosses verify-cluster replication db....  ================================"
+echo ""
+
+./config/verify-cluster.sh
+
+echo "✅ Proses verify-cluster db selesai."
