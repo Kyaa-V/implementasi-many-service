@@ -1,7 +1,5 @@
 version: "3.8"
-
 services:
-
   nuxt-service:
     build:
       context: ./micro-frontend/nuxt-app-service
@@ -9,16 +7,18 @@ services:
     container_name: nuxt-service
     image: nuxt-service:latest
     ports:
-    - "3032:3000"
+      - "3032:3000"
     networks:
       - micro-frontend-network
     volumes:
       - ./micro-frontend/nuxt-app-service:/src/app
       - /src/app/node_modules
+    env_file:
+      - .env
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - HMR_HOST=host.docker.internal
-      - NUXT_PUBLIC_BASE_URL=/dashboard
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - HMR_HOST=${HMR_HOST}
+      - NUXT_PUBLIC_BASE_URL=${NUXT_PUBLIC_BASE_URL}
     restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
@@ -33,19 +33,21 @@ services:
     container_name: next-service
     image: next-service:latest
     ports:
-    - "3031:3000"
+      - "3031:3000"
     networks:
       - micro-frontend-network
     volumes:
       - ./micro-frontend/next-service:/src/app
       - /src/app/node_modules
+    env_file:
+      - .env
     environment:
-        - CHOKIDAR_USEPOLLING=true  # Untuk file watching di Docker
-        - WATCHPACK_POLLING=true    # Alternative untuk file watching
-        - NODE_ENV=development
-        - HOST=0.0.0.0
-        - PORT=3000
-        - NEXT_PUBLIC_BASE_URL=/
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - WATCHPACK_POLLING=${WATCHPACK_POLLING}
+      - NODE_ENV=${NODE_ENV}
+      - HOST=${HOST}
+      - PORT=${NEXT_SERVICE_PORT}
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}
     stdin_open: true
     tty: true
     restart: no
@@ -54,7 +56,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    
+
   auth-service-laravel:
     build:
       context: ./micro-service/laravel-service
@@ -62,17 +64,24 @@ services:
       target: development
     container_name: auth-service-laravel
     image: auth-service-laravel:latest
-    # ports:
-    # - "127.0.0.1:8080:3000" 
+    env_file:
+      - .env
     environment:
-      - APP_ENV=${APP_ENV:-local}
-      - APP_DEBUG=${APP_DEBUG:-true}
-      - DB_CONNECTION=${DB_CONNECTION:-mysql}
-      - DB_HOST=${DB_HOST:-mysql}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_DATABASE=${DB_DATABASE:-micro-service}
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-1215161}
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
     depends_on:
       mysql-master:
         condition: service_healthy
@@ -88,16 +97,25 @@ services:
     container_name: express-service
     image: express-service:latest
     ports:
-    - "3000:3000" 
+      - "3000:3000"
     depends_on:
       - auth-service-laravel
     networks:
       - micro-service-network
     volumes:
       - ./micro-service/express-service:/src/app
+    env_file:
+      - .env
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - CHOKIDAR_INTERVAL=1000
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
     restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
@@ -110,7 +128,7 @@ services:
     container_name: nginx-laravel
     image: nginx-laravel:latest
     ports:
-    - "8000:80" 
+      - "8000:80"
     depends_on:
       - auth-service-laravel
     networks:
@@ -120,7 +138,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      
+
   gateway-nginx-backend:
     build: ./nginx-gateway-backend
     container_name: gateway-nginx-backend
@@ -155,11 +173,13 @@ services:
     image: micro-service-mysql-master:9.4
     container_name: mysql-master
     restart: no
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
-      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-      MYSQL_ROOT_HOST: "%"
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_ROOT_HOST=%
     ports:
       - "3307:3306"
     volumes:
@@ -167,7 +187,7 @@ services:
     networks:
       - micro-service-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -180,11 +200,13 @@ services:
     image: micro-service-mysql-replica1:9.4
     container_name: mysql-replica1
     restart: no
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
-      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-      MYSQL_ROOT_HOST: "%"
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_ROOT_HOST=%
     volumes:
       - mysql-replica1-data:/var/lib/mysql
     depends_on:
@@ -192,12 +214,12 @@ services:
     networks:
       - micro-service-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-      
+
   mysql-replica2:
     build:
       context: ./database/mysql-replica2
@@ -205,11 +227,13 @@ services:
     image: micro-service-mysql-replica2:9.4
     container_name: mysql-replica2
     restart: no
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1215161}
-      MYSQL_DATABASE: ${DB_DATABASE:-micro-service}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-      MYSQL_ROOT_HOST: "%"
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_ROOT_HOST=%
     volumes:
       - mysql-replica2-data:/var/lib/mysql
     depends_on:
@@ -217,12 +241,12 @@ services:
     networks:
       - micro-service-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-1215161}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-  
+
   replication-setup:
     image: mysql:8.0-debian
     container_name: replication-setup
@@ -248,7 +272,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "6379", "-a", "yourpassword", "ping"]
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "${REDIS_PORT}", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -259,11 +283,15 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # port AMQP untuk komunikasi service
-      - "15672:15672" # port UI management
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    networks:
+      - micro-service-network
 
 networks:
   micro-service-network:

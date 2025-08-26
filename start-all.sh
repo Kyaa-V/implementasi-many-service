@@ -7,11 +7,11 @@ echo "🚀 Memulai semua service..."
 script_start_time=$(date +%s)
 
 echo "🛑 Menghentikan dan menghapus service yang sedang berjalan..."
-docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env down -v
+docker-compose -f compose.dev.yml down -v
 echo "✅ Semua service telah dihentikan."
 
 echo "⬆️  Build ulang dan up semua service..."
-if ! docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env up -d --build; then
+if ! docker-compose -f compose.dev.yml up -d --build; then
     echo "❌ Build atau up service gagal. Periksa error di atas."
     exit 1
 fi

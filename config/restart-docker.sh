@@ -7,7 +7,7 @@ echo "🚀 Memulai semua service..."
 script_start_time=$(date +%s)
 
 echo "Restart Docker Container"
-docker-compose -f compose.dev.yml --env-file ./micro-service/laravel-service/.env restart
+docker-compose -f compose.dev.yml restart
 echo "✅ Semua service telah direstart."
 
 
