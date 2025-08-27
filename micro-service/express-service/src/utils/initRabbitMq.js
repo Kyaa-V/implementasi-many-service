@@ -11,6 +11,7 @@ async function initRabbitMq() {
         console.log('Connected to RabbitMQ and queue asserted')
     } catch (error) {
         console.error('Error connecting to RabbitMQ:', error)
+        process.exit(1)
     }
 }
 
