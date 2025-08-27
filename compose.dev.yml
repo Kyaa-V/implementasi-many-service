@@ -19,6 +19,8 @@ services:
       - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
       - HMR_HOST=${HMR_HOST}
       - NUXT_PUBLIC_BASE_URL=${NUXT_PUBLIC_BASE_URL}
+    depends_on:
+      - rabbitmq
     restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
@@ -51,6 +53,8 @@ services:
     stdin_open: true
     tty: true
     restart: no
+    depends_on:
+      - rabbitmq
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
@@ -85,10 +89,13 @@ services:
     depends_on:
       mysql-master:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./micro-service/laravel-service:/var/www
     networks:
       - micro-service-network
+ 
 
   express-service:
     build:
@@ -100,6 +107,7 @@ services:
       - "3000:3000"
     depends_on:
       - auth-service-laravel
+      - rabbitmq
     networks:
       - micro-service-network
     volumes:
