@@ -39,3 +39,5 @@ test-output/
 
 # Others
 .env.*      # in case you use multiple env files (e.g., .env.production)
+
+/generated/prisma
