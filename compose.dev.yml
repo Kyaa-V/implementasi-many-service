@@ -274,6 +274,7 @@ services:
   redis-server:
     image: redis:latest
     container_name: redis-server
+    restart: unless-stopped
     build:
       context: ./database/redis
       dockerfile: Dockerfile
@@ -295,6 +296,8 @@ services:
       - "15672:15672"
     env_file:
       - .env
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
@@ -311,3 +314,5 @@ volumes:
   mysql-master-data:
   mysql-replica1-data:
   mysql-replica2-data:
+  rabbitmq_data:
+    driver: local
