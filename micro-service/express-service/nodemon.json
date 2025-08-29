@@ -1,6 +1,6 @@
 {
   "watch": ["src"],
   "ext": "js,json",
-  "exec": "node index.js",
+  "exec": "ts-node index.ts",
   "legacyWatch": true
 }
