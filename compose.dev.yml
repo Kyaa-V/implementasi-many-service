@@ -115,6 +115,7 @@ services:
     env_file:
       - .env
     environment:
+      - DATABASE_URL=${DATABASE_URL}
       - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
       - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
       - REDIS_HOST=${REDIS_HOST}
