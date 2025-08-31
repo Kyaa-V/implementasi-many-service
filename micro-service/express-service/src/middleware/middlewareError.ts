@@ -1,19 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import { ResponseError } from "../error/respon-error"
+import {ZodError } from "zod"
 
-async function MiddlewareError(err: ResponseError, req: Request, res: Response, next: NextFunction) {
-    if (err instanceof ResponseError) {
-        res.status(err.status).json({
-            message: err.message
-        })
-    } else {
-        res.status(500).json({
-            message: "Internal Server Error"
-        })
-    }
-}
-
-
-module.exports = {
-    MiddlewareError
-}
+export const MiddlewareError = (
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (error instanceof ZodError) {
+    res.status(400).json({ errors: error.message });
+  }else if(error instanceof ResponseError){
+    res.status(error.status).json({errors:error.message})
+  }else{
+    res.status(500).json({errors:error.message})
+  }
+};

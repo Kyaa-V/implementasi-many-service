@@ -9,6 +9,6 @@
     "moduleResolution": "node",
     "types": ["node"],
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
   }
 }

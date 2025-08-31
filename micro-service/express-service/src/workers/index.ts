@@ -1,5 +1,5 @@
-const { getChannel } = require('../utils/initRabbitMq.js')
-const checkQueue = require('./checkQueue.js')
+import { checkQueue } from "./checkQueue"
+const { getChannel } = require('../utils/initRabbitMq.ts')
 
 async function startWorker() {
     const channel = getChannel();

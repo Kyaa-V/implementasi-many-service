@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 
 const express = require('express');
-const api = require('./src/routes/api.js')
-const { initRabbitMq } = require('./src/utils/initRabbitMq.js')
-const startWorker = require('./src/workers/index.js');
-const { MiddlewareError } = require('./src/middleware/middlewareError.ts');
+const api = require('./src/routes/api.ts')
+const { initRabbitMq } = require('./src/utils/initRabbitMq.ts')
+const startWorker = require('./src/workers/index.ts');
+const { MiddlewareError } = require('./src/middleware/middlewareError');
 const app = express();
 const port = 3000;
 require('dotenv').config()
