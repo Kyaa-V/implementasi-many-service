@@ -8,7 +8,7 @@ const router = express.Router()
 
 router.get('/', async (req:Request,res:Response)=> {
     const channel = getChannel();
-    channel.sendToQueue('test-queue', Buffer.from('Hello from Express Service!'))
+    channel.sendToQueue('test-queue', Buffer.from('Hello from Express Service! channel Rabbitmq'))
     const cacheRedis = await RedisClient.get('cache')
     console.log(`Redis cache value: ${cacheRedis}`)
     res.send("hello world testing ok sip");

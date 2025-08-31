@@ -3,10 +3,12 @@ import { userService } from "../app/service/userService";
 import { registerUser } from "../app/model/userModel";
 
 export class userController{
-    static register(req: Request, res:Response, next: NextFunction){
+    static async register(req: Request, res:Response, next: NextFunction){
         try {
-            const data = userService.register(req.body as registerUser);
-            console.log(data)
+            console.log("memulai controller")
+            const data = await userService.register(req.body as registerUser);
+            console.log("selesai")
+            res.status(201).json(data);
         } catch (e) {
             next(e)
         }

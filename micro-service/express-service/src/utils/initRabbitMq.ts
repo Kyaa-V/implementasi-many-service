@@ -7,6 +7,7 @@ async function initRabbitMq() {
         const connection = await amqp.connect('amqp://user:password@rabbitmq:5672')
         channel = await connection.createChannel()
         await channel.assertQueue('test-queue')
+        await channel.assertQueue('notification_register')
 
         console.log('Connected to RabbitMQ and queue asserted')
     } catch (error) {
