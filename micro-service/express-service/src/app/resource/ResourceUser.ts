@@ -1,4 +1,4 @@
-async function toResponseUser(user: any) {
+export async function toResponseUser(user: any) {
     return {
         message: user.message,
         status: user.status || 500,

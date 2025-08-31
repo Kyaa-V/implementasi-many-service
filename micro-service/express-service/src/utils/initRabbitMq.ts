@@ -1,6 +1,6 @@
 const amqp = require('amqplib')
 
-let channel;
+let channel: any;
 
 async function initRabbitMq() {
     try {
