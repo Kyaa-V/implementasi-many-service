@@ -8,4 +8,4 @@ export type registerUser = {
 export type LoginUser = {
     email: string, 
     password: string
-}
+}  

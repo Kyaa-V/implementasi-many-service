@@ -1,7 +1,7 @@
-export async function toResponseUser(user: any) {
+export async function toResponseUser(statusCode: number, message: string,user: any) {
     return {
-        message: user.message,
-        status: user.status || 500,
+        message: message,
+        status:statusCode | 500,
         data:{
             id: user.id,
             email: user.email
