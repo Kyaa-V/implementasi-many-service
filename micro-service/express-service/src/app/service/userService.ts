@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { VALIDATION } from "../../validation/validation"
 import { userValidation } from "../../validation/userValidation"
 import { registerUser } from "../model/userModel";
@@ -8,6 +9,8 @@ const { getChannel } = require("../../utils/initRabbitMq");
 
 export class userService{
     static async register(data:any){
+        const uuid = uuidv4();
+        console.log(uuid)
         const channel = getChannel()
         console.log("memulai proses validasi di service")
         const validatedData = VALIDATION.validation(userValidation.REGISTER, data as registerUser);
@@ -32,6 +35,6 @@ export class userService{
             name: createUser.name
         })))
 
-        return toResponseUser(302,'User created Succesfully',createUser)
+        return toResponseUser(201,'User created Succesfully',createUser)
     }
 }

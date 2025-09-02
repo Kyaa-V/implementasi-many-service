@@ -1,3 +1,5 @@
+const {logger} = require('../logging/Logging');
+
 const redis = require('redis')
 
 class RedisClient {
@@ -17,14 +19,14 @@ class RedisClient {
                 })
 
             this.client.on('connect', () => {
-                console.log('Connected to redis')
+                logger.info('Connected to redis')
             })
             this.client.on('error', (error)=>{
-                console.log('Error connecting to redis:', error)
+                logger.info('Error connecting to redis:', error)
             })
             this.client.connect()
         } catch (error) {
-            console.error('Error connecting to redis:', error)
+            logger.error('Error connecting to redis:', error)
         }
     }
 
@@ -34,7 +36,7 @@ class RedisClient {
 
             return data ? JSON.parse(data) : null
         } catch (error) {
-            console.error('Error getting data from redis:', error)
+            logger.error('Error getting data from redis:', error)
             return null
         }
     }
@@ -45,7 +47,7 @@ class RedisClient {
                 EX: expirationInSeconds
             })
         } catch (error) {
-            console.error('Error setting data in redis:', error)
+            logger.error('Error setting data in redis:', error)
         }
     }
 
@@ -53,7 +55,7 @@ class RedisClient {
         try {
             await this.client.del(keys)
         } catch (error) {
-            console.error('Error deleting data from redis:', error)
+            logger.error('Error deleting data from redis:', error)
         }
     }
 }
