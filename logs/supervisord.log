@@ -122,3 +122,17 @@
 2025-09-02 02:42:49,979 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-09-02 02:42:49,981 INFO success: nginx-error entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-09-02 02:42:49,984 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-02 06:49:47,997 INFO Set uid to user 0 succeeded
+2025-09-02 06:49:48,029 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-09-02 06:49:48,036 INFO supervisord started with pid 1
+2025-09-02 06:49:49,048 INFO spawned: 'nginx' with pid 59
+2025-09-02 06:49:49,057 INFO spawned: 'nginx-error' with pid 60
+2025-09-02 06:49:49,221 INFO spawned: 'php-fpm' with pid 61
+2025-09-02 06:49:50,776 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-02 06:49:50,779 INFO success: nginx-error entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-02 06:49:50,781 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-02 09:03:54,508 WARN received SIGQUIT indicating exit request
+2025-09-02 09:03:54,985 INFO waiting for nginx, nginx-error, php-fpm to die
+2025-09-02 09:03:56,099 INFO stopped: php-fpm (exit status 0)
+2025-09-02 09:03:57,335 WARN stopped: nginx-error (terminated by SIGTERM)
+2025-09-02 09:03:58,831 INFO stopped: nginx (exit status 0)

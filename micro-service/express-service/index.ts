@@ -3,6 +3,7 @@ import { logger } from './src/logging/Logging'
 
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const api = require('./src/routes/api.ts')
 const { initRabbitMq } = require('./src/utils/initRabbitMq.ts')
 const startWorker = require('./src/workers/index.ts');
@@ -12,6 +13,7 @@ const port = 3000;
 require('dotenv').config()
 
 app.use(express.json())
+app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/v1', api )
