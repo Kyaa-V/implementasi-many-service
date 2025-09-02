@@ -29,7 +29,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         pdo_mysql \
         pdo_sqlite \
         zip \
-        opcache
+        opcache \
+        sockets
 
 # Install xdebug via PECL
 RUN pecl install xdebug && docker-php-ext-enable xdebug
@@ -116,4 +117,4 @@ RUN echo "=== Available PHP Extensions ===" && php -m
 EXPOSE 80 443
 
 ENTRYPOINT ["/usr/local/bin/init.sh"]
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/supervisord","-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

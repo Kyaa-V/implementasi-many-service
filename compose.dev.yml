@@ -93,6 +93,7 @@ services:
         condition: service_healthy
     volumes:
       - ./micro-service/laravel-service:/var/www
+      - ./logs:/var/log/supervisor
     networks:
       - micro-service-network
  

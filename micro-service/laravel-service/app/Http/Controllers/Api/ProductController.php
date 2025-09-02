@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\SendMessageTestRabbitMq;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,8 @@ class ProductController extends Controller
      */
     public function index()
     {
+        event(new SendMessageTestRabbitMq('send message from laravel to express use rabbitmq'));
+        
         return response()->json(['Produk A', 'Produk B']);
     }
 

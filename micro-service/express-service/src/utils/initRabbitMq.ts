@@ -1,3 +1,5 @@
+import { logger } from "../logging/Logging";
+
 const amqp = require('amqplib')
 
 let channel: any;
@@ -8,10 +10,11 @@ async function initRabbitMq() {
         channel = await connection.createChannel()
         await channel.assertQueue('test-queue')
         await channel.assertQueue('notification_register')
+        await channel.assertQueue('send-queue',{durable: false})
 
-        console.log('Connected to RabbitMQ and queue asserted')
+        logger.info('Connected to RabbitMQ and queue asserted')
     } catch (error) {
-        console.error('Error connecting to RabbitMQ:', error)
+        logger.error('Error connecting to RabbitMQ:', error)
         process.exit(1)
     }
 }
