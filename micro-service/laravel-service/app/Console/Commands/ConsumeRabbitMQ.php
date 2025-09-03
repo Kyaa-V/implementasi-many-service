@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ConsumeRabbitMQ extends Command
 {
@@ -12,7 +13,7 @@ class ConsumeRabbitMQ extends Command
 
     public function handle()
     {
-        $this->info('🚀 Starting consumer...');
+        Log::info('🚀 Starting consumer...');
         
         try {
             $connection = new AMQPStreamConnection(
@@ -23,8 +24,8 @@ class ConsumeRabbitMQ extends Command
 
             $channel->queue_declare($queue, false, true, false, false);
             
-            $this->info("✅ Connected! Waiting for messages...");
-            $this->info("📝 Press CTRL+C to stop");
+            Log::info("✅ Connected! Waiting for messages...");
+            Log::info("📝 Press CTRL+C to stop");
             
             $callback = function($msg) {
                 $data = json_decode($msg->body, true);
@@ -42,17 +43,12 @@ class ConsumeRabbitMQ extends Command
 
             $channel->basic_consume($queue, '', false, true, false, false, $callback);
 
-            // Loop sederhana tanpa timeout
-            while (true) {
-                if (count($channel->callbacks)) {
-                    $channel->wait();
-                } else {
-                    sleep(1); // Tunggu sebentar jika tidak ada callback
-                }
+            while($channel->is_consuming()){
+                $channel->wait();
             }
 
         } catch (\Throwable $th) {
-            $this->error('❌ Error: ' . $th->getMessage());
+            Log::error('❌ Error: ' . $th->getMessage());
         }
     }
 }

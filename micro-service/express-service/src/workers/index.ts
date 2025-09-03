@@ -7,7 +7,7 @@ async function startWorker() {
     const channel = getChannel();
 
     checkQueue(channel);
-    notification(channel);
+    //notification(channel);
     sendQueue(channel)
 }
 
