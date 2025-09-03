@@ -17,6 +17,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/v1', api )
+
 app.use(MiddlewareError)
 
 // Morgan untuk HTTP logging

@@ -178,6 +178,9 @@ php artisan config:cache || echo "⚠️  Config cache failed, continuing..."
 php artisan route:cache || echo "⚠️  Route cache failed, continuing..."  
 php artisan view:cache || echo "⚠️  View cache failed, continuing..."
 
+echo "🔄 Consuming RabbitMQ messages..."
+php artisan rabbitmq:consume &
+
 echo "🎉 Laravel ready to run." 
 echo "🌐 Running on http://localhost:8000"
 
