@@ -1,6 +1,11 @@
 {
-  "watch": ["src"],
-  "ext": "js,json",
+  "watch": ["src", "index.ts"],
+  "ext": "ts, js, json",
+  "ignore": ["node_modules", "dist"],
   "exec": "ts-node index.ts",
-  "legacyWatch": true
+  "env": {
+    "CHOKIDAR_USEPOLLING": true,
+    "CHOKIDAR_INTERVAL": 1000
+  },
+  "verbose": true
 }

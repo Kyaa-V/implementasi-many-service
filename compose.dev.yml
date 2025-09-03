@@ -112,7 +112,7 @@ services:
     networks:
       - micro-service-network
     volumes:
-      - ./micro-service/express-service:/src/app
+      - ./micro-service/express-service:/src/app:cached
     env_file:
       - .env
     environment:
