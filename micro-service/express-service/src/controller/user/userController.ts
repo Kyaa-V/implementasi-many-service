@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { userService } from "../app/service/userService";
-import { registerUser } from "../app/model/userModel";
-import { toResponseUser } from "../app/resource/ResourceUser";
-import { logger } from '../logging/Logging'
+import { userService } from "../../app/service/userService";
+import { registerUser } from "../../app/model/userModel";
+import { toResponseUser } from "../../app/resource/ResourceUser";
+import { logger } from '../../logging/Logging'
 
 export class userController{
     static async register(req: Request, res:Response, next: NextFunction){
@@ -15,7 +15,7 @@ export class userController{
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
             })
             logger.info("selesai create user")
-            const data = await toResponseUser(201,'User created Succesfully',createUser, token)
+            const data = await toResponseUser(res, true, 201, 'User created Succesfully',createUser, token)
 
             console.log(data);
             return res.status(201).json(data);
