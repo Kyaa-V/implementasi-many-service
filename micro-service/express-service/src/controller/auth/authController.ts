@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { userService } from "../../app/service/auth/authService";
+import { authService } from "../../app/service/auth/authService";
 import { registerUser } from "../../app/model/AuthModel";
 import { toResponseUser } from "../../app/resource/ResourceUser";
 import { logger } from '../../logging/Logging'
@@ -11,7 +11,7 @@ export class authController{
 
             logger.info(`database register use type: ${req.databaseType}`)
             logger.info("memulai controller")
-            const { createUser, token, refreshToken} = await userService.register(req.body as registerUser);
+            const { createUser, token, refreshToken} = await authService.register(req.body as registerUser);
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',

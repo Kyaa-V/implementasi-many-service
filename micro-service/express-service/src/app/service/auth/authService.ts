@@ -10,7 +10,7 @@ import { ResponseError } from "../../../error/respon-error";
 const { getChannel } = require("../../../utils/initRabbitMq");
 import { logger } from '../../../logging/Logging'
 import { registerUser } from "../../model/AuthModel"
-export class userService{
+export class authService{
     static async register(data:any){
         try {
             const channel = getChannel()
