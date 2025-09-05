@@ -38,12 +38,4 @@ model User {
   update_at  DateTime  @updatedAt @default(now()) @db.Timestamp(6)
   posts      Post[]
   profile    Profile?
-  roles      Role[]
-}
-
-model Role{
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255) @default("USER")
-  description String?  @db.VarChar(255)
-  users       User[]
 }

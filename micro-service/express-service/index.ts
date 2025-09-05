@@ -1,4 +1,3 @@
-import { databaseSelector } from './src/middleware/databaseSelector';
 import { Request, Response, NextFunction } from "express";
 import { logger } from './src/logging/Logging'
 
@@ -16,7 +15,6 @@ require('dotenv').config()
 app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }))
-app.use(databaseSelector)
 
 app.use('/v1', api )
 
