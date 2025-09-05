@@ -1,7 +1,14 @@
 import { NextFunction, Request, Response } from "express";
+import { getPrismaClient } from "../../lib/database";
+import { logger } from "../../logging/Logging";
 
 export class userController{
     static async getAllUser(req: Request, res: Response, next: NextFunction){
+
+        const data = req.user
+        
+        logger.info(`database get all user use type:${req.databaseType}`)
+        console.log(`data from get all user: ${data}`)
         return
     }
     static async getUserMe(req: Request, res: Response, next: NextFunction){

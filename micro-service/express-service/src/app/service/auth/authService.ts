@@ -1,14 +1,15 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-import { createToken } from "../../utils/token"
-import { VALIDATION } from "../../validation/validation"
-import { userValidation } from "../../validation/userValidation"
-import { registerUser } from "../model/userModel";
-import { prismaClient } from "../../database/prisma";
-import { ResponseError } from "../../error/respon-error";
-const { getChannel } = require("../../utils/initRabbitMq");
-import { logger } from '../../logging/Logging'
+import { createToken } from "../../../utils/token"
+import { VALIDATION } from "../../../validation/validation"
+import { userValidation } from "../../../validation/userValidation"
+
+import { prismaClient } from "../../../database/prisma";
+import { ResponseError } from "../../../error/respon-error";
+const { getChannel } = require("../../../utils/initRabbitMq");
+import { logger } from '../../../logging/Logging'
+import { registerUser } from "../../model/AuthModel"
 export class userService{
     static async register(data:any){
         try {
@@ -28,10 +29,18 @@ export class userService{
             logger.info("memulai proses pembuatan user di service")
 
             const hashedPassword = await bcrypt.hash(validatedData.password, 10)
+
+
             const createUser = await prismaClient.user.create({
                 data: {
                     ...validatedData,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    roles:{
+                        connect: {name: "USER"}
+                    }
+                },
+                include:{
+                    roles: true
                 }
             })
 
