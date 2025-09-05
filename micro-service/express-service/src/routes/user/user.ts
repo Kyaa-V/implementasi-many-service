@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { userController } from "../../controller/userController"
+import { userController } from "../../controller/user/userController"
 import { authentication } from "../../middleware/auth"
 
 const express = require('express')

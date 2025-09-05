@@ -1,16 +1,26 @@
-export async function toResponseUser(statusCode: number, message: string,user: any, token: string) {
-    return {
-        payload:{
+import {Response } from "express"
+
+
+export function toResponseUser(
+    res: Response,
+    success:boolean,
+    statusCode:number,
+    message:string,
+    user:any,
+    token:string,
+){
+    return res.status(statusCode).json({
+            success: success,
             message: message,
-            status:statusCode || 500,
-            token: token,
             data:{
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                created_at: user.created_at,
-                updated_at: user.updated_at
-            }
-        },
-    }
+                user:{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    created_at: user.created_at,
+                    updated_at: user.updated_at
+                },
+                token: token,
+            },
+    })
 }
