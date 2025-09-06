@@ -1,16 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import { getPrismaClient } from "../../lib/database";
 import { logger } from "../../logging/Logging";
 import { UserService } from "../../app/service/user/userService";
+import { success } from "zod";
 
 export class userController{
     static async getAllUser(req: Request, res: Response, next: NextFunction){
 
-        const data = UserService.all(req.user)
+        console.log(req.user)
+        const data = await UserService.all()
         
         logger.info(`database get all user use type:${req.databaseType}`)
-        console.log(`data from get all user: ${data}`)
-        return
+        return res.status(201).json({
+            data:{
+                status: "Success",
+                message: "Berhasil get all data user",
+                user: data
+            }
+        })
     }
     static async getUserMe(req: Request, res: Response, next: NextFunction){
         return

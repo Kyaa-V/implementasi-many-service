@@ -4,6 +4,6 @@ import { token } from "../../controller/token/tokenontroller"
 
 const router = express.Router()
 
-router.get('/refresh-token', AuthRequest.authentication, token.refreshToken)
+router.get('/refresh-token', token.refreshToken)
 
 module.exports = router
