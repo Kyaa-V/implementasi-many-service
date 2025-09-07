@@ -20,7 +20,7 @@ const router = express.Router()
 //     res.send("testing");
 // })
 
-router.get('/get-all-user', AuthRequest.authentication, userController.getAllUser)
+router.get('/get-all-user', AuthRequest.authRoles, userController.getAllUser)
 router.get('/get-user-me', AuthRequest.authentication, userController.getUserMe)
 router.get('/get-user/:id', AuthRequest.authentication, userController.getUserById)
 router.put('/update-user/:id', AuthRequest.authentication, userController.updateUser)

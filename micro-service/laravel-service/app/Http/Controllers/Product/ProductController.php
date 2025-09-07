@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Product;
 
 use App\Events\SendMessageTestRabbitMq;
 use App\Http\Controllers\Controller;
