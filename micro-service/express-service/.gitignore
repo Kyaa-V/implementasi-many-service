@@ -41,3 +41,8 @@ test-output/
 .env.*      # in case you use multiple env files (e.g., .env.production)
 
 /generated/prisma
+
+#keys
+
+keys/
+*pem

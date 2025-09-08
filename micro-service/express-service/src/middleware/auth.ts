@@ -23,7 +23,7 @@ export class AuthRequest{
         return sessionTimeOut(res,false,401, "No token provided")
       }
 
-      const decoded = await createToken.verify(token, process.env.JWT_SECRET_TOKEN!) as DecodedUser
+      const decoded = await createToken.verify(token) as DecodedUser
 
         const searchUserById = await prismaClient.user.findUnique({
           where:{
@@ -53,7 +53,7 @@ export class AuthRequest{
     const token = authHeader && authHeader.split(" ")[1];
 
     if (token) {
-      const decoded = await createToken.verify(token, process.env.JWT_SECRET_TOKEN!) as DecodedUser
+      const decoded = await createToken.verify(token) as DecodedUser
 
         req.user = decoded as DecodedUser;
         return next();
@@ -64,7 +64,7 @@ export class AuthRequest{
       return sessionTimeOut(res, false, 401, "No token Provided")
     }
 
-    const decoded = await createToken.verify(token, process.env.JWT_SECRET_TOKEN!) as DecodedUser
+    const decoded = await createToken.verify(token) as DecodedUser
 
     const checkExRefreshTokenInRedis = await RedisClient.get(`user:${decoded.id}`);
       if(!checkExRefreshTokenInRedis){
@@ -73,7 +73,6 @@ export class AuthRequest{
 
       const newAccessToken = await createToken.token(
         { id: decoded.id, name: decoded.name },
-        process.env.JWT_SECRET_TOKEN,
         "15m"
       );
 

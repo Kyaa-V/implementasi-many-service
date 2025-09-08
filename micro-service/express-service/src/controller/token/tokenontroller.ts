@@ -14,7 +14,9 @@ export class token{
               return res.status(401).json({message: "Unauthorized"})
           }
 
-          const decoded = await createToken.verify(refreshToken, process.env.JWT_SECRET_TOKEN!) as DecodedUser
+          const decoded = await createToken.verify(refreshToken
+            
+          ) as DecodedUser
           
           const checkExRefreshTokenInRedis = await RedisClient.get(`user:${decoded.id}`)
 
@@ -23,7 +25,6 @@ export class token{
           }
           const newAccessToken = await createToken.token(
                 { id: decoded.id, name: decoded.name },
-                process.env.JWT_SECRET_TOKEN,
                 "15m"
               );
           

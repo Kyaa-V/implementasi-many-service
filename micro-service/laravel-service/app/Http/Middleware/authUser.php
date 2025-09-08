@@ -7,6 +7,7 @@ use Closure;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class authUser
@@ -25,17 +26,17 @@ class authUser
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
-
-        if($token){
-            try {
-                $decoded = $this->tokenService->verify($token);
-
-
-            } catch (\Throwable $th) {
-                throw $th;
-            }
+        if(!$token){
+            return response()->json([
+                "payload"=>[
+                    "message"=> "Not token provided"
+                ]
+            ]);
         }
-    
+
+        $decoded = $this->tokenService->verify($token);
+        Log::info('decoded token:',(array)$decoded);
         return $next($request);
+    
     }
 }
