@@ -8,6 +8,12 @@ use Exception;
 
 class TokenService
 {
+    protected $publicKey;
+
+    public function __construct()
+    {
+        $this->publicKey = file_get_contents(storage_path('keys/public.pem'));
+    }
     public function create($payload, $expiryMinutes = 60)
     {
         $issuedAt = time();
@@ -18,13 +24,13 @@ class TokenService
             'exp' => $expire
         ]);
         
-        return JWT::encode($payload, env('JWT_SECRET'), 'HS256');
+        return JWT::encode($payload, $this->publicKey, 'RS256');
     }
     
     public function verify($token)
     {
         try {
-            return JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
+            return $decoded = JWT::decode($token, new Key($this->publicKey, 'RS256'));
         } catch (Exception $e) {
             throw new Exception('Invalid or expired token');
         }

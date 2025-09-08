@@ -44,10 +44,8 @@ export class authService{
                 }
             })
 
-            const token = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email},
-                process.env.JWT_SECRET_TOKEN, '15m')
-            const refreshToken = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email},
-                process.env.JWT_SECRET_TOKEN, '30d')
+            const token = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email}, '15m')
+            const refreshToken = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email},'30d')
 
             channel.sendToQueue('notification_register', Buffer.from(JSON.stringify({
                 email: createUser.email,
