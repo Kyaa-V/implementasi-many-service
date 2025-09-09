@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Product;
 use App\Events\SendMessageTestRabbitMq;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 /**
  * @OA\Info(
@@ -26,6 +29,16 @@ class ProductController extends Controller
     public function index()
     {
         event(new SendMessageTestRabbitMq('send message from laravel to express use rabbitmq'));
+
+        $value = Redis::get('user123');
+
+        if(!$value){
+            Redis::set('user123', 'default value');
+            $value = Redis::get('user123');
+            
+        }
+        $defaultConection = DB::getDefaultConnection();
+        Log::info('Current database use: ' . $defaultConection);
         
         return response()->json(['Produk A', 'Produk B']);
     }

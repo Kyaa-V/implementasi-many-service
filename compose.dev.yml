@@ -61,6 +61,42 @@ services:
       timeout: 3s
       retries: 5
 
+  express-service:
+    build:
+      context: ./micro-service/express-service
+      dockerfile: Dockerfile
+    container_name: express-service
+    image: express-service:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service-laravel
+      - rabbitmq
+    networks:
+      - micro-service-network
+    volumes:
+      - ./micro-service/express-service:/src/app:cached
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+    restart: no
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+
   auth-service-laravel:
     build:
       context: ./micro-service/laravel-service
@@ -97,42 +133,6 @@ services:
     networks:
       - micro-service-network
  
-
-  express-service:
-    build:
-      context: ./micro-service/express-service
-      dockerfile: Dockerfile
-    container_name: express-service
-    image: express-service:latest
-    ports:
-      - "3000:3000"
-    depends_on:
-      - auth-service-laravel
-      - rabbitmq
-    networks:
-      - micro-service-network
-    volumes:
-      - ./micro-service/express-service:/src/app:cached
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
-      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_PORT}
-      - RABBITMQ_USER=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-    restart: no
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
   nginx-laravel:
     build: ./micro-service/laravel-service/docker/nginx/development
     container_name: nginx-laravel
@@ -143,11 +143,11 @@ services:
       - auth-service-laravel
     networks:
       - micro-service-network
-    healthcheck:
-      test: curl -f http://localhost || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # healthcheck:
+    #   test: curl -f http://localhost || exit 1
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
 
   gateway-nginx-backend:
     build: ./nginx-gateway-backend
