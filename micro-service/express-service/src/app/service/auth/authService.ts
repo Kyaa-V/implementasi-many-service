@@ -57,7 +57,7 @@ export class authService{
             }
         } catch (error) {
             logger.error("Error occurred during user registration", error)
-            throw new ResponseError(500, 'Internal Server Error')
+            throw error;
         }
     }
 }

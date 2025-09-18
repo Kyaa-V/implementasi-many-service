@@ -32,6 +32,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         opcache \
         sockets
 
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 # Install xdebug via PECL
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 

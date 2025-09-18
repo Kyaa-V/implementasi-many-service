@@ -31,11 +31,13 @@ class ProductController extends Controller
         event(new SendMessageTestRabbitMq('send message from laravel to express use rabbitmq'));
 
         $value = Redis::get('user123');
+        Log::info($value);
 
         if(!$value){
+            Log::info('Redis set default value');
             Redis::set('user123', 'default value');
             $value = Redis::get('user123');
-            
+            Log::info($value);
         }
         $defaultConection = DB::getDefaultConnection();
         Log::info('Current database use: ' . $defaultConection);
