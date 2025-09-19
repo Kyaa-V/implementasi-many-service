@@ -41,11 +41,9 @@ class RedisClient {
         }
     }
 
-    async set(key, value, expirationInSeconds = 3600){
+    async set(key, value, options={ EX:3600 }){
         try {
-            await this.client.set(key, JSON.stringify(value), {
-                EX: expirationInSeconds
-            })
+            await this.client.set(key, JSON.stringify(value), options)
         } catch (error) {
             logger.error('Error setting data in redis:', error)
         }
