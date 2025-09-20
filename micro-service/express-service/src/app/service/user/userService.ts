@@ -7,7 +7,9 @@ export class UserService{
         
         const prisma = getPrismaClient('read')
 
-        const data = await prisma.user.findMany()
+        const data = await prisma.user.findMany({
+            include: { roles: true }
+        })
         logger.info(data)
         return data
     }

@@ -55,42 +55,52 @@ export class AuthRequest{
     if (token) {
       const decoded = await createToken.verify(token) as DecodedUser
 
+      if(!decoded){
+        refreshToken()
+      }
+
         req.user = decoded as DecodedUser;
         return next();
     }
 
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) {
-      return sessionTimeOut(res, false, 401, "No token Provided")
-    }
+    refreshToken()
 
-    const decoded = await createToken.verify(token) as DecodedUser
-
-    const checkExRefreshTokenInRedis = await RedisClient.get(`user:${decoded.id}`);
-      if(!checkExRefreshTokenInRedis){
-        return sessionTimeOut(res, false, 401, "your session has expired, please login again")
+    async function refreshToken(){
+      const refreshToken = req.cookies?.refreshToken;
+      if (!refreshToken) {
+        return sessionTimeOut(res, false, 401, "No token Provided")
       }
 
-      const newAccessToken = await createToken.token(
-        { id: decoded.id, name: decoded.name },
-        "15m"
-      );
+      const decoded = await createToken.verify(token) as DecodedUser
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 hari
-      });
+      const checkExRefreshTokenInRedis = await RedisClient.get(`user:${decoded.id}`);
+        if(!checkExRefreshTokenInRedis){
+          return sessionTimeOut(res, false, 401, "your session has expired, please login again")
+        }
 
-      await RedisClient.set(`user:${decoded.id}`, refreshToken, 30 * 24 * 60 * 60);
+        const newAccessToken = await createToken.token(
+          { id: decoded.id, name: decoded.name, roles: decoded.roles },
+          "15m"
+        );
 
-      req.user = decoded as DecodedUser;
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 hari
+        });
 
-      return toResponseUser(res, true, 201, "Token refreshed successfully", {
-        id: decoded.id,
-        email: decoded.email,
-        name: decoded.name,
-      }, newAccessToken);
+        await RedisClient.set(`user:${decoded.id}`, refreshToken, 30 * 24 * 60 * 60);
+
+        req.user = decoded as DecodedUser;
+
+        return toResponseUser(res, true, 201, "Token refreshed successfully", {
+          id: decoded.id,
+          name: decoded.name,
+          roles: decoded.roles
+        }, newAccessToken);
+
+    }
+
   };
 }
 

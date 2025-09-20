@@ -44,8 +44,8 @@ export class authService{
                 }
             })
 
-            const token = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email}, '15m')
-            const refreshToken = await createToken.token({ id: createUser.id, name: createUser.name, email:createUser.email},'30d')
+            const token = await createToken.token({ id: createUser.id, name: createUser.name, roles: createUser.roles}, '15m')
+            const refreshToken = await createToken.token({ id: createUser.id, name: createUser.name, roles: createUser.roles},'30d')
 
             channel.sendToQueue('notification_register', Buffer.from(JSON.stringify({
                 email: createUser.email,
@@ -57,7 +57,7 @@ export class authService{
             }
         } catch (error) {
             logger.error("Error occurred during user registration", error)
-            throw new ResponseError(500, 'Internal Server Error')
+            throw error;
         }
     }
 }

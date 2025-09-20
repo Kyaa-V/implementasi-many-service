@@ -1,9 +1,8 @@
 import express from "express"
-import { AuthRequest } from "../../middleware/auth"
-import { token } from "../../controller/token/tokenontroller"
+import { Token } from "../../controller/token/tokenController"
 
 const router = express.Router()
 
-router.get('/refresh-token', token.refreshToken)
+router.get('/refresh-token', Token.refreshToken)
 
 module.exports = router

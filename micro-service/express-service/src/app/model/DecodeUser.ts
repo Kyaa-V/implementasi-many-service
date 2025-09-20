@@ -1,5 +1,7 @@
 export interface DecodedUser {
   id: string;
-  email: string;
+  roles:string[]
   name: string;
+  iat: number;
+  exp: number;
 }

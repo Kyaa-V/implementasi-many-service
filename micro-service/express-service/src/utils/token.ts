@@ -13,9 +13,9 @@ export class createToken{
     static async token(payload:any, expiresIn: string){
         return await jwt.sign(payload, secretKey, {expiresIn, algorithm: "RS256"} )
     }
-    static verify(token: string): Promise<DecodedUser>{
+    static verify(token: string, options: object = {}): Promise<DecodedUser>{
         return new Promise((resolve, reject) => {
-        jwt.verify(token, secretKey, (err: any, decoded: any) => {
+        jwt.verify(token, secretKey, options, (err: any, decoded: any) => {
             if (err) reject(err);
             else resolve(decoded as DecodedUser);
         });
