@@ -2,12 +2,19 @@
 
 namespace App\Policies;
 
+use App\Models\ExternalUser;
 use Illuminate\Auth\Access\Response;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class ProductPolicy
 {
+
+    public function __construct()
+    {
+        Log::info('ProductPolicy initialized');
+    }
     /**
      * Determine whether the user can view any models.
      */
@@ -27,9 +34,13 @@ class ProductPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(ExternalUser $user): bool
     {
-        return false;
+        Log::info('ProductPolicy create called', [
+            'user_role' => $user->role,
+            'user_id' => $user->id
+        ]);
+        return $user->role === 'USER';
     }
 
     /**

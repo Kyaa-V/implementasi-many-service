@@ -2,6 +2,7 @@
 
 return [
     App\Providers\AppServiceProvider::class,
+    App\Providers\AuthServiceProviders::class,
     App\Providers\DatabaseServiceProvider::class,
     App\Providers\EventServiceProvider::class,
 ];

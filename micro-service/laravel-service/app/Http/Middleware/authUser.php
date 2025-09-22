@@ -18,25 +18,50 @@ class authUser
     {
         $this->tokenService = $tokenService;
     }
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
+
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
-        if(!$token){
-            return response()->json([
-                "payload"=>[
-                    "message"=> "Not token provided"
-                ]
+        try {
+            $token = $request->bearerToken();
+            if (!$token) {
+                Log::warning('No token provided in request');
+                return response()->json([
+                    "payload" => [
+                        "message" => "No token provided"
+                    ]
+                ], 401);
+            }
+
+            Log::info('Token found, attempting to verify');
+            $decoded = $this->tokenService->verify($token);
+            Log::info('Token verified successfully');
+
+            // Fix: Pastikan struktur data konsisten
+
+            $authUser = [
+                'id'    => $decoded->id ?? null,
+                'name'  => $decoded->name ?? null,
+                'role' => $decoded->roles[0]->name ?? null, // Ambil role pertama
+            ];
+
+            $request->merge(['auth_user' => $authUser]);
+            
+            Log::info('Auth user data:', $authUser);
+
+        } catch (\Throwable $th) {
+            Log::error('Error in auth middleware:', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
             ]);
+            return response()->json([
+                "payload" => [
+                    "message" => "Invalid or expired token",
+                    "error" => $th->getMessage() // Tambahkan untuk debugging
+                ]
+            ], 403);
         }
 
-        $decoded = $this->tokenService->verify($token);
-        Log::info('decoded token:',(array)$decoded);
+        Log::info('Auth middleware passed, proceeding to next middleware/controller');
         return $next($request);
-    
     }
 }
