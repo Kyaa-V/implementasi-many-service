@@ -53,7 +53,10 @@ class ProductController extends Controller
 
             Log::info('Authorization passed, creating product');
             $validatedData = $request->validated();
-            $product = Product::create($validatedData);
+            $product = Product::create([
+                ...$validatedData,
+                'author' => $user->id,
+            ]);
             Log::info('Product created successfully');
 
             return response()->json([

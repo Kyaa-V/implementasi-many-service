@@ -9,7 +9,9 @@ import { prismaClient } from "../../../database/prisma";
 import { ResponseError } from "../../../error/respon-error";
 const { getChannel } = require("../../../utils/initRabbitMq");
 import { logger } from '../../../logging/Logging'
-import { registerUser } from "../../model/AuthModel"
+import { LoginUser, registerUser } from "../../model/AuthModel"
+import { getPrismaClient } from "../../../lib/database"
+
 export class authService{
     static async register(data:any){
         try {
@@ -59,5 +61,38 @@ export class authService{
             logger.error("Error occurred during user registration", error)
             throw error;
         }
+    }
+    static async login(data:any){
+        const validation = VALIDATION.validation(userValidation.LOGIN, data as LoginUser)
+
+        const prisma = getPrismaClient('read')
+
+        const user = await prisma.user.findUnique({
+            where: { email:validation.email },
+            include: {roles: true}
+        })
+
+        logger.info(user)
+
+        if(!user){
+            throw new ResponseError(404, "Email or password incorrect")
+        }
+        
+        const isPassword = await bcrypt.compare(validation.password, user.password)
+        if(!isPassword){
+            throw new ResponseError(400, "Email or password incorrect")
+        }
+
+        const channel = getChannel()
+
+        channel.sendToQueue('verification_email', Buffer.from(JSON.stringify({
+            email: user.email,
+            name: user.name,
+            time: new Date()
+        })))
+
+        const token = await createToken.token({ id: user.id, name: user.name, roles: user.roles},'15m')
+        const refreshToken = await createToken.token({ id: user.id, name: user.name, roles: user.roles},'15m')
+        return {user, token, refreshToken}
     }
 }

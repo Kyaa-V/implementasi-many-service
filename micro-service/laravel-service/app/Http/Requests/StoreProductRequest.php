@@ -23,7 +23,6 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'bookname' => 'required|string|min:3|max:255',
-            'author' => 'required|string|min:3|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string|max:1000',

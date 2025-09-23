@@ -11,6 +11,7 @@ async function initRabbitMq() {
         await channel.assertQueue('test-queue')
         await channel.assertQueue('notification_register')
         await channel.assertQueue('send-queue',{durable: false})
+        await channel.assertQueue('verification_email')
 
         logger.info('Connected to RabbitMQ and queue asserted')
     } catch (error) {
