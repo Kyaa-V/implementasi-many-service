@@ -67,7 +67,7 @@ export class Token {
 async function doRefresh(req: Request, res: Response, oldAccessToken: string) {
   const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "your session has expired, please login again" });
   }
 
   const decodedRefresh = (await createToken.verify(refreshToken)) as DecodedUser;

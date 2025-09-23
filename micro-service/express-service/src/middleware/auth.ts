@@ -4,6 +4,7 @@ import { toResponseUser } from "../app/resource/ResourceUser";
 import { sessionTimeOut } from "../app/resource/sessionTimeOut";
 import { prismaClient } from "../database/prisma";
 import { DecodedUser } from "../app/model/DecodeUser";
+import { logger } from "../logging/Logging";
 
 const RedisClient = require('../config/RedisClient.js')
 
@@ -49,34 +50,39 @@ export class AuthRequest{
   }
 
   static async authentication(req: Request, res: Response, next: NextFunction) {
+
     const authHeader= req.headers["authorization"] as string;
     const token = authHeader && authHeader.split(" ")[1];
 
-    if (token) {
-      const decoded = await createToken.verify(token) as DecodedUser
+    try {
 
-      if(!decoded){
-        refreshToken()
-      }
+      if (token) {
+        const decoded = await createToken.verify(token) as DecodedUser
+        logger.info(`userId: ${decoded.id}`)
 
         req.user = decoded as DecodedUser;
+
+        logger.info(`decoded token userId: ${req.user?.id}`)
+
         return next();
-    }
 
-    refreshToken()
+      }
 
-    async function refreshToken(){
+      logger.info("no access token, trying refresh...")
+
       const refreshToken = req.cookies?.refreshToken;
+
       if (!refreshToken) {
         return sessionTimeOut(res, false, 401, "No token Provided")
       }
 
-      const decoded = await createToken.verify(token) as DecodedUser
+      const decoded = await createToken.verify(refreshToken) as DecodedUser
+      logger.info(`decoded refresh token UserId: $decoded.id`)
 
-      const checkExRefreshTokenInRedis = await RedisClient.get(`user:${decoded.id}`);
-        if(!checkExRefreshTokenInRedis){
-          return sessionTimeOut(res, false, 401, "your session has expired, please login again")
-        }
+      const storedRefreshToken = await RedisClient.get(`user:${decoded.id}`)
+      if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
+          return sessionTimeOut(res, false, 401, "Sesi Anda telah berakhir, silakan login kembali")
+      }
 
         const newAccessToken = await createToken.token(
           { id: decoded.id, name: decoded.name, roles: decoded.roles },
@@ -88,17 +94,19 @@ export class AuthRequest{
           secure: process.env.NODE_ENV === "production",
           maxAge: 30 * 24 * 60 * 60 * 1000, // 30 hari
         });
+        res.setHeader("Authorization", `Bearer ${newAccessToken}`);
+        logger.info(`new access token: ${newAccessToken}`);
 
+        logger.info(`set redis refresh token for userId: ${decoded.id}`);
         await RedisClient.set(`user:${decoded.id}`, refreshToken, 30 * 24 * 60 * 60);
 
+        logger.info(`userId: ${decoded.id}`)
         req.user = decoded as DecodedUser;
 
-        return toResponseUser(res, true, 201, "Token refreshed successfully", {
-          id: decoded.id,
-          name: decoded.name,
-          roles: decoded.roles
-        }, newAccessToken);
+        return next();
 
+    } catch (error) {
+      return sessionTimeOut(res,false, 401, "Your session has expired, please login again")
     }
 
   };
