@@ -6,60 +6,98 @@ use App\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\ExternalUser;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return response()->json([
+            'payload' => [
+                'message' => 'products retrieved successfully',
+                'success' => true,
+            ]
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreProductRequest $request)
     {
-        //
+        try {
+            Log::info('Store method called');
+            Log::info('Auth User from request:', ['user' => $request->auth_user]);
+
+            // Uncomment dan perbaiki logic authorization jika diperlukan
+            $user = new ExternalUser($request->auth_user);
+            Log::info('ExternalUser created:', [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role
+            ]);
+
+            if(Gate::forUser(($user))->denies('create-product')){
+                Log::warning('Authorization failed for user:', ['user_id' => $user->id]);
+                return response()->json([
+                    'payload' => [
+                        'message' => 'unauthorized to create product',
+                        'success' => false,
+                        'debug' =>[
+                            'user_id' => $user->id,
+                            'user_role' => $user->role,
+                            'required_permissions'=> 'create-product'
+                        ]
+                        ]
+                ],403);
+            }
+
+            Log::info('Authorization passed, creating product');
+            $validatedData = $request->validated();
+            $product = Product::create([
+                ...$validatedData,
+                'author' => $user->id,
+            ]);
+            Log::info('Product created successfully');
+
+            return response()->json([
+                'payload' => [
+                    'message' => 'product created successfully',
+                    'success' => true,
+                    'data' => $product
+                ]
+            ], 201);
+
+        } catch (\Throwable $th) {
+            Log::error('Error in store method:', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'payload' => [
+                    'message' => 'Internal server error',
+                    'success' => false,
+                    'error' => $th->getMessage()
+                ]
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Product $product)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Product $product)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateProductRequest $request, Product $product)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Product $product)
     {
         //
