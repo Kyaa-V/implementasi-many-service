@@ -92,7 +92,7 @@ export class authService{
         })))
 
         const token = await createToken.token({ id: user.id, name: user.name, roles: user.roles},'15m')
-        const refreshToken = await createToken.token({ id: user.id, name: user.name, roles: user.roles},'15m')
+        const refreshToken = await createToken.token({ id: user.id, name: user.name, roles: user.roles},'30d')
         return {user, token, refreshToken}
     }
 }

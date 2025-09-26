@@ -21,7 +21,7 @@ export class authController{
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
             })
 
-            await RedisClient.set(`user:refreshToken:${createUser.id}`, refreshToken, 30* 24 * 60 * 60) // Set cache refresh token for 30 days
+            await RedisClient.set(`user:refreshToken:${createUser.id}`, refreshToken, 30 * 24 * 60 * 60 * 1000) // Set cache refresh token for 30 days
             logger.info("selesai create user")
             logger.info(createUser)
             return await toResponseUser(res, true, 201, 'User created Succesfully',createUser, token)
@@ -41,7 +41,7 @@ export class authController{
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         })
 
-        await RedisClient.set(`user:refreshToken:${user.id}`, refreshToken, 30* 24 * 60 * 60) // Set cache refresh token for 30 days
+        await RedisClient.set(`user:refreshToken:${user.id}`, refreshToken, 30 * 24 * 60 * 60 * 1000) // Set cache refresh token for 30 days
         logger.info("selesai login user")
         return await toResponseUser(res, true, 200, 'User login Succesfully',user, token)
     }

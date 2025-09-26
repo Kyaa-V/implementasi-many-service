@@ -14,12 +14,33 @@ class ProductController extends Controller
 {
     public function index()
     {
+        try {
+            
+        $data = Product::all();
+        
         return response()->json([
             'payload' => [
                 'message' => 'products retrieved successfully',
                 'success' => true,
+                'products' => [
+                    'data' => $data,
+                ]
             ]
         ], 200);
+        } catch (\Throwable $th) {
+            Log::error('Error in index method:', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'payload' => [
+                    'message' => 'Internal server error',
+                    'success' => false,
+                    'error' => $th->getMessage()
+                ]
+            ], 500);
+        }
     }
 
     public function store(StoreProductRequest $request)
@@ -33,7 +54,7 @@ class ProductController extends Controller
             Log::info('ExternalUser created:', [
                 'id' => $user->id,
                 'name' => $user->name,
-                'role' => $user->role
+                'roles' => $user->roles
             ]);
 
             if(Gate::forUser(($user))->denies('create-product')){
@@ -44,7 +65,7 @@ class ProductController extends Controller
                         'success' => false,
                         'debug' =>[
                             'user_id' => $user->id,
-                            'user_role' => $user->role,
+                            'user_roles' => $user->roles,
                             'required_permissions'=> 'create-product'
                         ]
                         ]
@@ -83,9 +104,32 @@ class ProductController extends Controller
         }
     }
 
-    public function show(Product $product)
+    public function show($id)
     {
-        //
+        $userId = request()->auth_user['id'] ?? null;
+        
+        $productId = $id;
+
+        Log::info('show method called', [
+            'user_id' => $userId,
+            'productId' => $productId
+        ]);
+
+        $dataProduct = Product::find($productId);
+
+        Log::info('Product retrivied succesfully',[
+            'product' => $dataProduct
+        ]);
+
+        return response()->json([
+            'payload' => [
+                'message' => 'product retrivied succesfully',
+                'success' => true,
+                'data' => [
+                    'product' => $dataProduct
+                ]
+            ]
+        ],200);
     }
 
     public function edit(Product $product)
