@@ -37,10 +37,10 @@ class ProductPolicy
     public function create(ExternalUser $user): bool
     {
         Log::info('ProductPolicy create called', [
-            'user_role' => $user->role,
+            'user_roles' => $user->roles,
             'user_id' => $user->id
         ]);
-        return $user->role === 'USER';
+        return $user->roles === 'USER';
     }
 
     /**

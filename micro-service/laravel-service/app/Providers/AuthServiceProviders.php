@@ -30,34 +30,34 @@ class AuthServiceProviders extends ServiceProvider
         // Define Gates untuk ExternalUser (karena bukan Eloquent User model standard)
         Gate::define('create-product', function (ExternalUser $user) {
             Log::info('Gate create-product called', [
-                'user_role' => $user->role,
+                'user_role' => $user->roles,
                 'user_id' => $user->id
             ]);
-            return $user->role === 'USER';
+            return $user->roles === 'USER';
         });
 
         Gate::define('view-products', function (ExternalUser $user) {
-            Log::info('Gate view-products called', ['user_role' => $user->role]);
-            return in_array($user->role, ['USER', 'ADMIN']);
+            Log::info('Gate view-products called', ['user_role' => $user->roles]);
+            return in_array($user->roles, ['USER', 'ADMIN']);
         });
 
         Gate::define('update-product', function (ExternalUser $user) {
-            Log::info('Gate update-product called', ['user_role' => $user->role]);
-            return in_array($user->role, ['USER', 'ADMIN']);
+            Log::info('Gate update-product called', ['user_role' => $user->roles]);
+            return in_array($user->roles, ['USER', 'ADMIN']);
         });
 
         Gate::define('delete-product', function (ExternalUser $user) {
-            Log::info('Gate delete-product called', ['user_role' => $user->role]);
-            return $user->role === 'ADMIN';
+            Log::info('Gate delete-product called', ['user_role' => $user->roles]);
+            return $user->roles === 'ADMIN';
         });
 
-        // Alternative: Gate berdasarkan role string
-        Gate::define('role', function (ExternalUser $user, string $role) {
-            Log::info('Gate role called', [
-                'user_role' => $user->role,
-                'required_role' => $role
+        // Alternative: Gate berdasarkan roles string
+        Gate::define('roles', function (ExternalUser $user, string $roles) {
+            Log::info('Gate roles called', [
+                'user_role' => $user->roles,
+                'required_role' => $roles
             ]);
-            return $user->role === $role;
+            return $user->roles === $roles;
         });
     }
 }

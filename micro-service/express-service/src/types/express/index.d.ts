@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { JwtPayload } from 'jsonwebtoken';
+import { DecodedUser } from '../../app/model/DecodeUser';
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -13,6 +14,7 @@ declare module 'express-serve-static-core' {
 declare global {
   namespace Express {
     interface Request {
+      user?: DecodedUser | null;
       prisma?: PrismaClient;
       databaseType: 'write-master' | 'read-replica';
     }

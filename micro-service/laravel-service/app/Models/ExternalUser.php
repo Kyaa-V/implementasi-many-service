@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExternalUser extends Model
 {
-    public $id, $name, $role;
+    public $id, $name, $roles;
 
     public function __construct($data = [])
     {
@@ -17,13 +17,7 @@ class ExternalUser extends Model
 
         $this->id = $data['id'] ?? null;
         $this->name = $data['name'] ?? null;
-        $this->role = $data['role'] ?? null; // Ambil dari struktur yang sudah diproses middleware
+        $this->roles = $data['roles'] ?? null; // Ambil dari struktur yang sudah diproses middleware
         
-    }
-
-    // Method untuk mengecek apakah user memiliki role tertentu
-    public function hasRole($roleName): bool
-    {
-        return $this->role === $roleName;
     }
 }
