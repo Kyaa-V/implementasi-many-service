@@ -32,15 +32,16 @@ class authUser
                     $decoded = $this->tokenService->verify($token);
                     Log::info('Token verified successfully');
 
+                    Log::info('$decoded:', ['$decoded' => $decoded]);
+
                     $authUser = [
                         'id'    => $decoded->id ?? null,
                         'name'  => $decoded->name ?? null,
-                        'roles' => $decoded->roles[0]->name ?? null,
+                        'roles' => $decoded->roles ?? null,
                     ];
 
-                    $request->merge(['auth_user' => $authUser]);
-
-                    Log::info('Auth user data:', $authUser);
+                    $request->attributes->set('auth_user', $authUser);
+                    $request->attributes->set('token', $token);
 
                     return $next($request);
                 } catch (\Throwable $th) {
@@ -50,9 +51,11 @@ class authUser
                 Log::info("no token to access, trying to refresh token...");
             }
 
+            Log::info('trying refresh....');
 
             $refreshToken = $request->cookie('refreshToken');
-            Log::info('refresh token from cookie:', ['refreshToken' => $refreshToken]);
+
+            Log::info('refreshToken:', ['refreshToken' => $refreshToken]);
 
             if(!$refreshToken){
                 Log::warning('your session has expired, please login again');
@@ -64,15 +67,15 @@ class authUser
                 ], 403);
             }
 
+            Log::info('starting decoded refreshToken');
             $decodedRefreshToken = $this->tokenService->verify($refreshToken);
-            Log::info('Refresh token verified successfully');
-            Log::info('users', ['users' => $decodedRefreshToken]);
-            Log::info('usersId', ['usersId' => $decodedRefreshToken->id]);
+
+            Log::info('decodedRefreshToken:', ['decodedRefreshToken' => $decodedRefreshToken]);
 
             $storedRefreshToken = Redis::get('user:refreshToken:' . $decodedRefreshToken->id);
+            $storedRefreshToken = trim($storedRefreshToken, '"');
 
-            Log::info('refreshToken', ['refreshToken' => $refreshToken]);
-            Log::info('stored refresh token', ['stored refresh token' => $storedRefreshToken]);
+            Log::info('storedRefreshToken:', ['storedRefreshToken' => $storedRefreshToken]);
 
             if($refreshToken !== $storedRefreshToken){
                 Log::warning('Refresh token does not match stored token');
@@ -81,31 +84,30 @@ class authUser
                         "message" => "Invalid refresh token, please login again",
                         "success" => false
                     ]
-                ]);
+                ], 403);
             }
+
             $newToken = $this->tokenService->create([
                 'id' => $decodedRefreshToken->id,
                 'name' => $decodedRefreshToken->name,
                 'roles' => $decodedRefreshToken->roles[0]->name ?? null
             ], 15);
 
-            Log::info('token: ' . $newToken);
+            Log::info('newToken:', ['newToken' => $newToken]);
 
-            $response = $next($request);
-
-            $response->headers->set('Authorization', 'Bearer ' . $newToken);
 
             $authUser = [
                 'id'    => $decodedRefreshToken->id ?? null,
                 'name'  => $decodedRefreshToken->name ?? null,
-                'roles' => $decodedRefreshToken->roles[0]->name ?? null,
+                'roles' => $decodedRefreshToken->roles ?? null,
             ];
 
-            $request->merge(['auth_user' => $authUser]);
+            $request->attributes->set('auth_user', $authUser);
+            $request->attributes->set('token', $newToken);
 
             Log::info('Auth user data:', $authUser);
 
-            return $response;
+            return $next($request);
 
 
         // } catch (\Throwable $th) {
