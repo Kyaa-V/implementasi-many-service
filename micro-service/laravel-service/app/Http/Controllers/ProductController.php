@@ -15,16 +15,27 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            
-        $data = Product::all();
+        
+        Log::info('starting process get all product in index function');
+        
+        $token = request()->attributes->get('token');
+
+        Log::info('token:', ['token' => $token]);
+        $data = Product::paginate(5);
         
         return response()->json([
             'payload' => [
                 'message' => 'products retrieved successfully',
                 'success' => true,
                 'products' => [
-                    'data' => $data,
-                ]
+                    'data' => $data->items(),
+                    'current_page' => $data->currentPage(),
+                    'prev' => $data->previousPageUrl(),
+                    'next' => $data->nextPageUrl(),
+                    'total' => $data->total(),
+                    'last_page' => $data->lastPage(),
+                ],
+                'token' => $token
             ]
         ], 200);
         } catch (\Throwable $th) {
@@ -47,10 +58,16 @@ class ProductController extends Controller
     {
         try {
             Log::info('Store method called');
-            Log::info('Auth User from request:', ['user' => $request->auth_user]);
+            Log::info('Auth User from request:', ['user' => $request->attributes->get('auth_user')['id']]);
+
+
+            $token = $request->attributes->get('token');
+            $user = $request->attributes->get('auth_user') ?? null;
+
+            Log::info('users:', ["users" => $user]);
 
             // Uncomment dan perbaiki logic authorization jika diperlukan
-            $user = new ExternalUser($request->auth_user);
+            $user = new ExternalUser($user);
             Log::info('ExternalUser created:', [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -84,7 +101,8 @@ class ProductController extends Controller
                 'payload' => [
                     'message' => 'product created successfully',
                     'success' => true,
-                    'data' => $product
+                    'data' => $product,
+                    'token' => $token
                 ]
             ], 201);
 
@@ -106,7 +124,10 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $userId = request()->auth_user['id'] ?? null;
+        $userId = request()->attributes->get('auth_user')['id'] ?? null;
+        $token = request()->attributes->get('token');
+
+        Log::info('token:', ['token:' => $token]);
         
         $productId = $id;
 
@@ -126,7 +147,8 @@ class ProductController extends Controller
                 'message' => 'product retrivied succesfully',
                 'success' => true,
                 'data' => [
-                    'product' => $dataProduct
+                    'product' => $dataProduct,
+                    'token' => $token
                 ]
             ]
         ],200);

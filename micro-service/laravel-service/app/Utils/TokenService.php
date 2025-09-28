@@ -8,12 +8,18 @@ use Exception;
 
 class TokenService
 {
+    protected $privateKey;
     protected $publicKey;
 
     public function __construct()
     {
+        // Private key untuk SIGN (encode)
+        $this->privateKey = file_get_contents(storage_path('keys/private.pem'));
+        
+        // Public key untuk VERIFY (decode)  
         $this->publicKey = file_get_contents(storage_path('keys/public.pem'));
     }
+    
     public function create($payload, $expiryMinutes = 60)
     {
         $issuedAt = time();
@@ -24,15 +30,17 @@ class TokenService
             'exp' => $expire
         ]);
         
-        return JWT::encode($payload, $this->publicKey, 'RS256');
+        // ✅ Gunakan PRIVATE key untuk encode
+        return JWT::encode($payload, $this->privateKey, 'RS256');
     }
     
     public function verify($token)
     {
         try {
-            return $decoded = JWT::decode($token, new Key($this->publicKey, 'RS256'));
+            // ✅ Gunakan PUBLIC key untuk decode
+            return JWT::decode($token, new Key($this->publicKey, 'RS256'));
         } catch (Exception $e) {
-            throw new Exception('Invalid or expired token');
+            throw new Exception('Invalid or expired token: ' . $e->getMessage());
         }
     }
 }
