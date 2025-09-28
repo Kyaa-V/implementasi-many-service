@@ -59,7 +59,7 @@ class ProductController extends Controller
     *                        @OA\Property( property="created_at", type="date", example="gfiuewhfjgwekg")
     *                        @OA\Property( property="created_at", type="date", example="gfiuewhfjgwekg")
     *                        @OA\Property( property="image_url", type="string", example="https://storage/api/image/12")
-    *                      )
+    *          `            )
     *                   )
     *                     @OA\Property( property="current_page", type="integer", example=1)
     *                     @OA\Property( property="prev", type="string", nullable=true, example="http://localhost:8080/api/product?page=1")
@@ -127,22 +127,22 @@ class ProductController extends Controller
             Log::info('users:', ["users" => $user]);
 
             // Uncomment dan perbaiki logic authorization jika diperlukan
-            $user = new ExternalUser($user);
+            $users = new ExternalUser($user);
             Log::info('ExternalUser created:', [
-                'id' => $user->id,
-                'name' => $user->name,
-                'roles' => $user->roles
+                'id' => $users->id,
+                'name' => $users->name,
+                'roles' => $users->roles
             ]);
 
-            if(Gate::forUser(($user))->denies('create-product')){
-                Log::warning('Authorization failed for user:', ['user_id' => $user->id]);
+            if(Gate::forUser(($users))->denies('create-product')){
+                Log::warning('Authorization failed for user:', ['user_id' => $users->id]);
                 return response()->json([
                     'payload' => [
                         'message' => 'unauthorized to create product',
                         'success' => false,
                         'debug' =>[
-                            'user_id' => $user->id,
-                            'user_roles' => $user->roles,
+                            'user_id' => $users->id,
+                            'user_roles' => $users->roles,
                             'required_permissions'=> 'create-product'
                         ]
                         ]
@@ -153,7 +153,7 @@ class ProductController extends Controller
             $validatedData = $request->validated();
             $product = Product::create([
                 ...$validatedData,
-                'author' => $user->id,
+                'author' => $users->id,
             ]);
             Log::info('Product created successfully');
 
