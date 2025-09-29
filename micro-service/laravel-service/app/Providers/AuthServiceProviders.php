@@ -33,7 +33,7 @@ class AuthServiceProviders extends ServiceProvider
                 'user_role' => $user->roles,
                 'user_id' => $user->id
             ]);
-            return $user->roles === 'USER';
+            return $user->roles[0]->name === 'USER';
         });
 
         Gate::define('view-products', function (ExternalUser $user) {

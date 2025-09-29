@@ -9,4 +9,9 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
-require __DIR__ . '/api/product/product.php';
+
+Route::prefix('/v1')->group(function(){
+
+    require __DIR__ . '/api/product/product.php';
+
+});
