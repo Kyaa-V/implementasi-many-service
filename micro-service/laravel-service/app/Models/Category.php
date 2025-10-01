@@ -9,8 +9,9 @@ class Category extends Model
 {
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
     use HasFactory;
+    protected $hidden = ['pivot'];
 
     public function product(){
-        return $this->belongsTo(Product::class, 'product_categories');
+        return $this->belongsToMany(Product::class, 'product_categories', 'category_id',  'product_id');
     }
 }

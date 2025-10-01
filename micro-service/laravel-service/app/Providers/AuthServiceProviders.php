@@ -43,7 +43,7 @@ class AuthServiceProviders extends ServiceProvider
 
         Gate::define('update-product', function (ExternalUser $user) {
             Log::info('Gate update-product called', ['user_role' => $user->roles]);
-            return in_array($user->roles, ['USER', 'ADMIN']);
+            return in_array($user->roles[0]->name, ['USER', 'ADMIN']);
         });
 
         Gate::define('delete-product', function (ExternalUser $user) {

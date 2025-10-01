@@ -33,17 +33,21 @@ export class authService{
             const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
 
-            const createUser = await prismaClient.user.create({
-                data: {
-                    ...validatedData,
-                    password: hashedPassword,
-                    roles:{
-                        connect: {name: "USER"}
+            const createUser = await prismaClient.$transaction(async(prisma) => {
+                const product = await prisma.user.create({
+                    data: {
+                        ...validatedData,
+                        password: hashedPassword,
+                        roles:{
+                            connect: {name: "USER"}
+                        }
+                    },
+                    include:{
+                        roles: true
                     }
-                },
-                include:{
-                    roles: true
-                }
+                })
+
+                return product
             })
 
             const token = await createToken.token({ id: createUser.id, name: createUser.name, roles: createUser.roles}, '15m')

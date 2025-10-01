@@ -13,6 +13,7 @@ use App\Http\Resources\SingleProductResource;
 use App\Models\Category;
 use App\Models\ExternalUser;
 use App\Models\ProductCategory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
@@ -86,14 +87,14 @@ class ProductController extends Controller
         $perPage = request()->query('per_page', 5);
         $perPage = min(max((int) $perPage, 1), 100);
 
-        Log::info('token:', ['token' => $token]);
-        $data = Product::paginate($perPage, ['*'], 'page', $page);
+            Log::info('token:', ['token' => $token]);
+            $data = Product::with('categories')->paginate($perPage, ['*'], 'page', $page);
 
-        if(!$data){
-            return ErrorHandler::handleNotFound('Product@index(data:Product)');
-        }
+            if(!$data){
+                return ErrorHandler::handleNotFound('Product@index(data:Product)');
+            }
 
-        Log::info('data product paginate:', ['data' => $data]);
+            Log::info('data product paginate:', ['data' => $data]);
 
         return new MultipleProductResource('show product successfully',200, true, $data, $token);
         
@@ -154,6 +155,8 @@ class ProductController extends Controller
             Log::info('Authorization passed, creating product');
             $validatedData = $request->validated();
 
+            DB::beginTransaction();
+
             Log::info($validatedData);
             $product = Product::create([
                 'bookname' => $validatedData['bookname'],
@@ -165,17 +168,26 @@ class ProductController extends Controller
             ]);
 
             Log::info('productId',['productId' => $product->id]);
-            Log::info('categoriesId',['categoriesId' => $validatedData->category]);
+            Log::info('categoriesId',['categoriesId' => $validatedData['category']]);
 
-            $setCategories = ProductCategory::create([
-                'productsId' => $product->id,
-                'categoriesId' => $product->category,
-            ]);
+            $product->categories()->attach($validatedData['category']);
+            $setCategories = $product->load('categories');
+
+            Log::info('Product with categories', $setCategories->toArray());
+            // $setCategories = ProductCategory::create([
+            //     'product_id' => $product->id,
+            //     'category_id' => $validatedData['category'],
+            // ]);
+
+            $productWithCategories = Product::with('categories')->find($product->id);
+
+            DB::commit();
+            Log::info($productWithCategories);
 
             Log::info('Categories',['Categories' => $setCategories]);
             Log::info('Product created successfully');
 
-            return new SingleProductResource('product create successfully',200, true, $product, $token);
+            return new SingleProductResource('product create successfully',200, true, $productWithCategories, $token);
 
             // return response()->json([
             //     'payload' => [
@@ -189,6 +201,7 @@ class ProductController extends Controller
             // ], 201);
 
         } catch (\Throwable $th) {
+            DB::rollBack();
             return ErrorHandler::handle($th, 'Product@store(create)',500, $th->getMessage());
         }
     }
@@ -209,7 +222,7 @@ class ProductController extends Controller
                 'productId' => $productId
             ]);
 
-            $dataProduct = Product::find($productId);
+            $dataProduct = Product::with('categories')->find($productId);
 
             if(!$dataProduct){
                 return ErrorHandler::handleNotFound('Product@show($id)');
@@ -227,12 +240,82 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        //
+        try {
+            
+        } catch (\Throwable $th) {
+            return ErrorHandler::handle($th, 'Product@edit',500, 'something wrong...');
+        }
     }
 
     public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        try {
+            Log::info('memulai proccess');
+
+            Log::info('product',['data' => $product]);
+
+            Log::info('Route parameter:', ['product_param' => request()->route('product')]);
+            Log::info('Product instance:', ['product' => $product]);
+
+            $token = $request->attributes->get('token');
+            $user = $request->attributes->get('auth_user') ?? null;
+
+            $users = new ExternalUser($user);
+            Log::info('ExternalUser created:', [
+                'id' => $users->id,
+                'name' => $users->name,
+                'roles' => $users->roles
+            ]);
+
+            if(Gate::forUser(($users))->denies('update-product')){
+                Log::warning('Authorization failed for user:', ['user_id' => $users->id]);
+                return response()->json([
+                    'payload' => [
+                        'message' => 'unauthorized to update product',
+                        'success' => false,
+                        'debug' =>[
+                            'user_id' => $users->id,
+                            'user_roles' => $users->roles,
+                            'required_permissions'=> 'create-product'
+                        ]
+                        ]
+                ],403);
+            }
+
+           
+            $validatedData = $request->validated();
+
+            DB::beginTransaction();
+
+            $product->update(array_filter([
+                'bookname' => $validatedData['bookname'] ?? null,
+                'price' => $validatedData['price'] ?? null,
+                'stock' => $validatedData['stock'] ?? null,
+                'description' => $validatedData['description'] ?? null,
+                'image' => $validatedData['image'] ?? null,
+            ]));
+
+
+            if (!$product || !$product->id) {
+                DB::rollBack();
+                return ErrorHandler::handleNotFound('Product@store(update): gagal mengupdate produk');
+            }
+            if(isset($validatedData['category'])){
+                $product->categories()->sync($validatedData['category']);
+            }
+
+            $product->load('categories');
+
+            Log::info('product', ['data'=> $product]);
+
+            DB::commit();
+
+            return new SingleProductResource('product update successfully',200, true, $product, $token);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ErrorHandler::handle($th, 'Product@update',500, 'something wrong...');
+        }
     }
 
     public function destroy(Product $product)
