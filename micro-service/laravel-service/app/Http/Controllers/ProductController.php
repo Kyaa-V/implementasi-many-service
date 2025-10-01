@@ -10,7 +10,9 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\MultipleProductResource;
 use App\Http\Resources\ProductResources;
 use App\Http\Resources\SingleProductResource;
+use App\Models\Category;
 use App\Models\ExternalUser;
+use App\Models\ProductCategory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
@@ -151,10 +153,26 @@ class ProductController extends Controller
 
             Log::info('Authorization passed, creating product');
             $validatedData = $request->validated();
+
+            Log::info($validatedData);
             $product = Product::create([
-                ...$validatedData,
+                'bookname' => $validatedData['bookname'],
+                'price' => $validatedData['price'],
+                'stock' => $validatedData['stock'],
+                'image' => $validatedData['image'],
+                'description' => $validatedData['description'],
                 'author' => $users->id,
             ]);
+
+            Log::info('productId',['productId' => $product->id]);
+            Log::info('categoriesId',['categoriesId' => $validatedData->category]);
+
+            $setCategories = ProductCategory::create([
+                'productsId' => $product->id,
+                'categoriesId' => $product->category,
+            ]);
+
+            Log::info('Categories',['Categories' => $setCategories]);
             Log::info('Product created successfully');
 
             return new SingleProductResource('product create successfully',200, true, $product, $token);

@@ -25,6 +25,7 @@ class StoreProductRequest extends FormRequest
             'bookname' => 'required|string|min:3|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'category' => 'required|integer',
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|max:2048',
         ];
