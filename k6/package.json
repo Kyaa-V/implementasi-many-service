@@ -1,0 +1,16 @@
+{
+  "name": "k6",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "RIZQI WIRAJAYA",
+  "type": "module",
+  "main": "loadTesting.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/k6": "^1.3.0",
+    "k6": "^0.0.0"
+  }
+}

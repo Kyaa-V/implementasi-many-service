@@ -103,7 +103,7 @@ services:
       dockerfile: ./docker/workspace/development/Dockerfile
       target: development
     container_name: auth-service-laravel
-    image: auth-service-laravel:latest
+    image: auth-service-lar;avel:latest
     env_file:
       - .env
     environment:
@@ -303,6 +303,58 @@ services:
     networks:
       - micro-service-network
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+      - GF_AUTH_ANONYMOUS_ORG_NAME=${GF_AUTH_ANONYMOUS_ORG_NAME}
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - micro-service-network
+  
+  influxdb:
+    image: influxdb:1.12
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_DB=k6
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    networks:
+      - micro-service-network
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    networks:
+      - micro-service-network
+    volumes:
+      - ./k6:/scripts
+      - ./results:/results
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+      - K6_INFLUXDB_ORGANIZATION=${INFLUXDB_ORG}
+      - K6_INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - K6_INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+    entrypoint: ["tail", "-f", "/dev/null"]
+
 networks:
   micro-service-network:
     driver: bridge
@@ -313,5 +365,7 @@ volumes:
   mysql-master-data:
   mysql-replica1-data:
   mysql-replica2-data:
+  grafana_data:
+  influxdb_data:
   rabbitmq_data:
     driver: local

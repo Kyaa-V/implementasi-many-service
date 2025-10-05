@@ -43,6 +43,7 @@ class authUser
                     $request->attributes->set('auth_user', $authUser);
                     $request->attributes->set('token', $token);
 
+                    Log::info('Auth middleware passed, proceeding to next middleware/controller');
                     return $next($request);
                 } catch (\Throwable $th) {
                     Log::error('access token invalid/expired, trying refresh....');
@@ -106,6 +107,7 @@ class authUser
             $request->attributes->set('token', $newToken);
 
             Log::info('Auth user data:', $authUser);
+            Log::info('Auth middleware passed, proceeding to next middleware/controller');
 
             return $next($request);
 
@@ -122,8 +124,5 @@ class authUser
         //         ]
         //     ], 403);
         // }
-
-        Log::info('Auth middleware passed, proceeding to next middleware/controller');
-        return $next($request);
     }
 }

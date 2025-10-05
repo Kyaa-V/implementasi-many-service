@@ -13,9 +13,11 @@ use App\Http\Resources\SingleProductResource;
 use App\Models\Category;
 use App\Models\ExternalUser;
 use App\Models\ProductCategory;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
@@ -318,8 +320,93 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy(Product $product)
+    public function destroy($id)
     {
-        //
+        try {
+
+            $product = Product::findOrFail($id);
+
+            DB::beginTransaction();
+
+            $product->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'payload' => [
+                    "message" => "produt delete successfully",
+                    "success" => true
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ErrorHandler::handle($th, 'Product@destroy',500, 'something wrong...');
+        }
+    }
+
+    public function forceDelete($id){
+        try {
+
+            $product = Product::findOrFail($id);
+
+            DB::beginTransaction();
+
+            $product->categories()->detach();
+
+            $product->forceDelete();
+
+            DB::commit();
+
+            return response()->json([
+                'payload' => [
+                    "message" => "produt delete permanent successfully",
+                    "success" => true
+                ]
+            ], 200);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ErrorHandler::handle($th, 'Product@forceDelete',500, 'something wrong...');
+        }
+    }
+    public function restore($id){
+        try {
+
+            $product = Product::withTrashed()->findOrFail($id);
+
+            $product->restore();
+
+            return response()->json([
+                'payload' => [
+                    "message" => "your product restore succesfully",
+                    "success" => true
+                ]
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return ErrorHandler::handle($th, 'Product@restore',500, 'something wrong...');
+        }
+    }
+
+    public function onlyTrashed(){
+        try {
+            $token = request()->attributes->get('token');
+            
+            $product = Product::onlyTrashed()->with('categories')->get();
+
+            Log::info('data only-trashed', ['data' => $product]);
+
+            return response()->json([
+                "payload" =>[
+                    "message" => "success get data only-trashed",
+                    "success" => true,
+                    "data" => $product
+                ]
+            ],200);
+
+            // return new MultipleProductResource('show product only trashed succesfully', 200, true, $product, $token);
+        } catch (\Throwable $th) {
+            return ErrorHandler::handle($th, 'Product@restore',500, 'something wrong...');
+        }
     }
 }

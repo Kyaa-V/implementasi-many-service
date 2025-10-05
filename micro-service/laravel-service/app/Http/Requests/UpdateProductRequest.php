@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -31,4 +34,33 @@ class UpdateProductRequest extends FormRequest
             'image' => 'nullable|image|max:2048',
         ];
     }
+
+    protected function failedValidation(Validator $validator)
+    {
+        // Force return JSON response dengan format konsisten
+        throw new HttpResponseException(
+            response()->json([
+                'payload' => [
+                    'message' => 'Validation failed',
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ]
+            ], 422)
+        );
+    }
+
+    /**
+     * Prepare for validation - force JSON response
+     */
+    protected function prepareForValidation()
+    {
+        $this->headers->set('Accept', 'application/json');
+    }
+
+    protected function failedAuthorization()
+    {
+        // Laravel otomatis panggil ini kalau authorize() return false
+        throw new AuthorizationException('Unauthorized');
+    }
+    
 }
